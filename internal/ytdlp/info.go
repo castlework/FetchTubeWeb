@@ -9,25 +9,25 @@ import (
 	"FetchTubeWeb/internal/models"
 )
 
-// 语言代码到可读名称的映射
+// Language code to readable name mapping
 var langMap = map[string]string{
 	"en": "English", "zh": "Chinese", "ja": "Japanese", "ko": "Korean",
 	"fr": "French", "de": "German", "es": "Spanish", "pt": "Portuguese",
 	"ru": "Russian", "ar": "Arabic", "hi": "Hindi", "it": "Italian",
 }
 
-// 视频编码器兼容性权重
+// Video codec compatibility weights
 var codecRank = map[string]int{
 	"avc1": 2000, "avc2": 2000, "avc3": 2000, "avc4": 2000, "h264": 2000,
 	"vp9": 1000, "vp09": 1000,
 	"av01": 0, "av1": 0,
 }
 
-// ParseVideoInfo 将 yt-dlp 原始信息转换为 VideoInfo 模型
+// ParseVideoInfo converts yt-dlp raw info to VideoInfo model
 func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 	allFormats := raw.Formats
 
-	// 查找最佳音频流（跳过 DRC 变体）
+	// Find best audio stream (skip DRC variants)
 	var bestAudio *RawFormat
 	for i := range allFormats {
 		f := &allFormats[i]
@@ -44,9 +44,9 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 		}
 	}
 
-	// 收集每个高度的最佳视频流
-	dashVideo := make(map[int]*RawFormat)   // DASH 纯视频流
-	videoByHeight := make(map[int]*RawFormat) // 综合最佳视频流
+	// Collect best video stream per height
+	dashVideo := make(map[int]*RawFormat)   // DASH video-only streams
+	videoByHeight := make(map[int]*RawFormat) // Overall best video streams
 
 	for i := range allFormats {
 		f := &allFormats[i]
@@ -71,7 +71,7 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 			videoByHeight[f.Height] = f
 		}
 
-		// 纯视频流（无音频）
+		// Video-only stream (no audio)
 		acodec := strings.ToLower(f.Acodec)
 		if acodec == "none" {
 			if existing, ok := dashVideo[f.Height]; ok {
@@ -85,13 +85,13 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 		}
 	}
 
-	// 构建格式列表
+	// Build format list
 	durationSeconds := toInt(raw.Duration)
 
 	formats := make([]models.FormatOption, 0)
 	seenHeights := make(map[int]bool)
 
-	// 按高度降序排序
+	// Sort by height descending
 	heights := make([]int, 0, len(videoByHeight))
 	for h := range videoByHeight {
 		heights = append(heights, h)
@@ -150,7 +150,7 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 		})
 	}
 
-	// 也处理同时有视频和音频的合并流
+	// Also handle merged streams with both video and audio
 	for i := range allFormats {
 		f := &allFormats[i]
 		vcodec := strings.ToLower(f.Vcodec)
@@ -189,7 +189,7 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 		})
 	}
 
-	// 按分辨率和文件大小排序
+	// Sort by resolution and file size
 	sort.Slice(formats, func(i, j int) bool {
 		a := formats[i]
 		b := formats[j]
@@ -201,10 +201,10 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 		return a.FileSizeMB > b.FileSizeMB
 	})
 
-	// 提取音频轨道
+	// Extract audio tracks
 	audioTracks := extractAudioTracks(allFormats)
 
-	// 缩略图：优先 yt-dlp 返回字段，否则从 URL 构造 i.ytimg.com 地址
+	// Thumbnail: prefer yt-dlp returned field, otherwise construct i.ytimg.com URL
 	thumbnail := raw.Thumbnail
 	if thumbnail == "" {
 		thumbnail = buildThumbnailURL(raw.URL)
@@ -225,7 +225,7 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 	}
 }
 
-// extractAudioTracks 提取音频轨道
+// extractAudioTracks extracts audio tracks
 func extractAudioTracks(formats []RawFormat) []models.AudioTrack {
 	type key struct {
 		lang  string
@@ -240,7 +240,7 @@ func extractAudioTracks(formats []RawFormat) []models.AudioTrack {
 		if vcodec != "none" || acodec == "none" {
 			continue
 		}
-		// 跳过 DRC 变体
+		// Skip DRC variants
 		if strings.Contains(f.FormatID, "-drc") {
 			continue
 		}
@@ -280,7 +280,7 @@ func extractAudioTracks(formats []RawFormat) []models.AudioTrack {
 		}
 	}
 
-	// 默认语言排前面
+	// Default language first
 	sort.Slice(tracks, func(i, j int) bool {
 		if tracks[i].Language == "English" {
 			return true
@@ -294,14 +294,14 @@ func extractAudioTracks(formats []RawFormat) []models.AudioTrack {
 	return tracks
 }
 
-// ---- 辅助函数 ----
+// ---- Helper functions ----
 
-// hasSize 检查格式是否有实际的文件大小数据
+// hasSize checks if the format has actual file size data
 func hasSize(f *RawFormat) bool {
 	return toFloat(f.Filesize) > 0 || toFloat(f.FilesizeApprox) > 0
 }
 
-// betterFormat 比较两个格式，优先选择有 filesize 数据的格式（避免 TBR 估算偏差）
+// betterFormat compares two formats, preferring ones with filesize data (avoids TBR estimation bias)
 func betterFormat(newF, existing *RawFormat, newScore, existingScore int) bool {
 	newHas := hasSize(newF)
 	existingHas := hasSize(existing)
@@ -375,7 +375,7 @@ func truncate(s string, maxLen int) string {
 	return s
 }
 
-// buildThumbnailURL 从 YouTube URL 提取 video ID 构造缩略图地址
+// buildThumbnailURL extracts video ID from YouTube URL to construct thumbnail URL
 func buildThumbnailURL(webpageURL string) string {
 	patterns := []string{
 		`(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/|youtube\.com/embed/|youtube\.com/v/)([a-zA-Z0-9_-]{11})`,

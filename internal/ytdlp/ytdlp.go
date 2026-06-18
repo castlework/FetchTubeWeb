@@ -1,4 +1,4 @@
-// Package ytdlp — yt-dlp 进程调用封装
+// Package ytdlp — yt-dlp process invocation wrapper
 package ytdlp
 
 import (
@@ -12,11 +12,11 @@ import (
 	"strings"
 )
 
-// 浏览器列表（支持从浏览器读取 cookies）
+// Browser list (supports reading cookies from browsers)
 var Browsers = []string{"chrome", "firefox", "edge", "brave", "opera"}
 
-// FindYtDlp 查找 yt-dlp.exe 的位置
-// 优先级：同目录 > PATH
+// FindYtDlp looks for yt-dlp.exe location
+// Priority: same directory > PATH
 func FindYtDlp() string {
 	exeDir := exeDirectory()
 	if exeDir != "" {
@@ -33,7 +33,7 @@ func FindYtDlp() string {
 	return p
 }
 
-// FindFFmpeg 查找 ffmpeg.exe 的位置
+// FindFFmpeg looks for ffmpeg.exe location
 func FindFFmpeg() string {
 	exeDir := exeDirectory()
 	if exeDir != "" {
@@ -50,7 +50,7 @@ func FindFFmpeg() string {
 	return p
 }
 
-// FindNode 查找 node.exe 的位置
+// FindNode looks for node.exe location
 func FindNode() string {
 	exeDir := exeDirectory()
 	if exeDir != "" {
@@ -67,7 +67,7 @@ func FindNode() string {
 	return p
 }
 
-// RawFormat yt-dlp --dump-json 返回的原始格式条目
+// RawFormat raw format entry from yt-dlp --dump-json
 type RawFormat struct {
 	FormatID     string      `json:"format_id"`
 	Vcodec       string      `json:"vcodec"`
@@ -84,7 +84,7 @@ type RawFormat struct {
 	Language     string      `json:"language"`
 }
 
-// RawInfo yt-dlp --dump-json 返回的完整视频信息
+// RawInfo complete video info from yt-dlp --dump-json
 type RawInfo struct {
 	Title       string      `json:"title"`
 	URL         string      `json:"webpage_url"`
@@ -97,17 +97,17 @@ type RawInfo struct {
 	Formats     []RawFormat `json:"formats"`
 }
 
-// FetchInfo 调用 yt-dlp 提取视频信息
+// FetchInfo calls yt-dlp to extract video info
 func FetchInfo(url, proxy, cookies string) (*RawInfo, error) {
 	ytdlp := FindYtDlp()
 	if ytdlp == "" {
-		return nil, fmt.Errorf("未找到 yt-dlp.exe，请将其放在程序同目录下")
+		return nil, fmt.Errorf("yt-dlp.exe not found — place it in the same directory as the program")
 	}
 	return fetchInfoOnce(ytdlp, url, proxy, cookies)
 }
 
-// fetchInfoOnce 执行 yt-dlp 信息提取
-// 不指定 -f，让 yt-dlp 使用默认选择器（bv*+ba/b），和 Python 原版 extract_info 行为一致
+// fetchInfoOnce executes yt-dlp info extraction
+// Does not specify -f, lets yt-dlp use its default selector (bv*+ba/b), matching Python original extract_info behavior
 func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 	args := []string{"--dump-json", "--no-warnings", "--no-playlist"}
 
@@ -115,11 +115,11 @@ func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 		args = append(args, "--proxy", proxy)
 	}
 
-	// Node.js 运行时 + EJS 远程组件（解决 YouTube n challenge，和 Python 版本一致）
+	// Node.js runtime + EJS remote component (solves YouTube n challenge, matching Python version)
 	if node := FindNode(); node != "" {
 		args = append(args, "--js-runtimes", "node:"+node)
 	}
-	// 和 Python opts["remote_components"] = ["ejs:github"] 完全一致
+	// Matches Python opts["remote_components"] = ["ejs:github"] exactly
 	args = append(args, "--remote-components", "ejs:github")
 
 	if cookies != "" {
@@ -137,7 +137,7 @@ func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 	cmd.Stderr = &stderr
 	output, err := cmd.Output()
 	if err != nil {
-		// 合并 stdout 和 stderr
+		// Merge stdout and stderr
 		combined := strings.TrimSpace(string(output) + "\n" + stderr.String())
 		if combined == "" {
 			combined = err.Error()
@@ -145,7 +145,7 @@ func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 		return nil, translateError(combined, nil)
 	}
 
-	// 检查 stderr 中是否有代理/Cookie 警告
+	// Check stderr for proxy/cookie warnings
 	stderrStr := stderr.String()
 	if stderrStr != "" {
 		lower := strings.ToLower(stderrStr)
@@ -158,22 +158,22 @@ func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 
 	var info RawInfo
 	if err := json.Unmarshal(output, &info); err != nil {
-		return nil, fmt.Errorf("解析视频信息失败: %w", err)
+		return nil, fmt.Errorf("failed to parse video info: %w", err)
 	}
 
 	return &info, nil
 }
 
-// BuildDownloadArgs 构建下载命令的参数列表（不包含 yt-dlp 路径）
-// 格式回退链和 Python 版本完全一致
+// BuildDownloadArgs builds the argument list for the download command (excludes yt-dlp path)
+// Format fallback chain exactly matches the Python version
 func BuildDownloadArgs(opts DownloadOptions) []string {
-	// 格式回退链（和 Python downloader._download_worker 完全一致）
+	// Format fallback chain (matches Python downloader._download_worker exactly)
 	formatStr := opts.FormatID
 	if ffmpeg := FindFFmpeg(); ffmpeg != "" {
-		// 有 ffmpeg：优先指定格式，回退到 bestvideo+bestaudio
+		// With ffmpeg: prefer specified format, fallback to bestvideo+bestaudio
 		formatStr = fmt.Sprintf("%s/bestvideo+bestaudio/best", opts.FormatID)
 	} else if strings.Contains(opts.FormatID, "+") {
-		// 无 ffmpeg 且选了 DASH 分离流 → 回退到 best mp4
+		// No ffmpeg and DASH split stream selected → fallback to best mp4
 		formatStr = "best[ext=mp4]/best"
 	} else {
 		formatStr = fmt.Sprintf("%s/best[ext=mp4]/best", opts.FormatID)
@@ -182,9 +182,9 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 	args := []string{
 		"--no-warnings",
 		"--no-playlist",
-		// --newline：强制 yt-dlp 每条进度输出单独成行（用 \n 而非 \r 原地刷新）。
-		// 这样后端 bufio.Scanner 才能按行解析进度，否则进度行用 \r 刷新无法被 ScanLines 读取。
-		// 仅影响输出格式，不影响下载行为。
+		// --newline: force yt-dlp to output each progress line on its own line (using \n instead of \r).
+		// This allows the backend bufio.Scanner to parse progress line by line, otherwise \r-refreshed
+		// progress lines cannot be read by ScanLines. Only affects output format, not download behavior.
 		"--newline",
 		"--format", formatStr,
 		"--output", filepath.Join(opts.SaveDir, "%(title)s.%(ext)s"),
@@ -195,7 +195,7 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		"--extractor-retries", "3",
 	}
 
-	// 多音轨：yt-dlp 默认 + 只合并第一个音频流，需 --audio-multistreams 才保留全部
+	// Multi-audio: yt-dlp defaults to merging only the first audio stream; --audio-multistreams keeps all
 	if strings.Count(opts.FormatID, "+") > 1 {
 		args = append(args, "--audio-multistreams")
 	}
@@ -203,27 +203,27 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 	if opts.Resume {
 		args = append(args, "--continue")
 	}
-	// 使用 --part 和 --keep-video，和 Python 原版行为一致
-	// --part 是 yt-dlp 默认行为（使用 .part 文件），--keep-video 保留中间视频流以便重试
+	// Use --part and --keep-video, matching Python original behavior
+	// --part is yt-dlp default (uses .part files), --keep-video retains intermediate video streams for retries
 	args = append(args, "--keep-video")
 
-	// 输出格式
+	// Output format
 	if opts.OutputExt != "" {
 		args = append(args, "--merge-output-format", opts.OutputExt)
 	}
 
-	// ffmpeg 位置
+	// ffmpeg location
 	if ffmpeg := FindFFmpeg(); ffmpeg != "" {
 		args = append(args, "--ffmpeg-location", ffmpeg)
 	}
 
-	// Node.js 运行时 + EJS 远程组件（解决 YouTube n challenge，和 Python 一致）
+	// Node.js runtime + EJS remote component (solves YouTube n challenge, matching Python)
 	if node := FindNode(); node != "" {
 		args = append(args, "--js-runtimes", "node:"+node)
 	}
 	args = append(args, "--remote-components", "ejs:github")
 
-	// 代理
+	// Proxy
 	if opts.Proxy != "" {
 		args = append(args, "--proxy", opts.Proxy)
 	}
@@ -237,7 +237,7 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		}
 	}
 
-	// ffmpeg 后处理参数（优化兼容性）
+	// ffmpeg post-processing args (optimize compatibility)
 	if opts.OutputExt == "mp4" {
 		args = append(args, "--postprocessor-args", "ffmpeg:-movflags +faststart")
 	} else {
@@ -248,7 +248,7 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 	return args
 }
 
-// DownloadOptions 下载选项
+// DownloadOptions download options
 type DownloadOptions struct {
 	URL                string
 	FormatID           string
@@ -261,14 +261,14 @@ type DownloadOptions struct {
 	KeepTempFiles      bool
 }
 
-// KillProcessTree Windows: 强制终止进程树
+// KillProcessTree Windows: force terminate process tree
 func KillProcessTree(cmd *exec.Cmd) {
 	if cmd == nil || cmd.Process == nil {
 		return
 	}
 
 	if runtime.GOOS == "windows" {
-		// 使用 taskkill /F /T 终止整个进程树（含 ffmpeg 子进程）
+		// Use taskkill /F /T to terminate the entire process tree (including ffmpeg child processes)
 		killCmd := exec.Command("taskkill", "/F", "/T", "/PID",
 			fmt.Sprintf("%d", cmd.Process.Pid))
 		killCmd.Stdout = nil
@@ -279,7 +279,7 @@ func KillProcessTree(cmd *exec.Cmd) {
 	}
 }
 
-// ---- 辅助函数 ----
+// ---- Helper functions ----
 
 func exeDirectory() string {
 	exe, err := os.Executable()
@@ -328,7 +328,7 @@ func toInt(v interface{}) int {
 	return 0
 }
 
-// translateError 翻译常见错误为用户友好的中文提示
+// translateError translates common errors to user-friendly Chinese prompts
 func translateError(output string, err error) error {
 	errStr := ""
 	if err != nil {
@@ -369,9 +369,9 @@ func translateError(output string, err error) error {
 		return fmt.Errorf("网络连接失败。\n请检查：\n  1. 代理设置是否正确\n  2. 网络是否正常\n  3. 防火墙是否拦截")
 	}
 
-	// 默认：返回原始错误（去除冗长的技术细节）
+	// Default: return original error (strip verbose technical details)
 	if output != "" {
-		// 截取第一行或前300字符
+		// Take first line or first 300 chars
 		firstLine := strings.SplitN(output, "\n", 2)[0]
 		if len(firstLine) > 300 {
 			firstLine = firstLine[:300] + "..."

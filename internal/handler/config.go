@@ -7,7 +7,7 @@ import (
 	"FetchTubeWeb/internal/config"
 )
 
-// handleGetConfig 获取配置
+// handleGetConfig returns config
 // GET /api/config
 func (s *Server) handleGetConfig(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
@@ -16,12 +16,12 @@ func (s *Server) handleGetConfig(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, cfg)
 }
 
-// handlePutConfig 保存配置
+// handlePutConfig saves config
 // PUT /api/config
 func (s *Server) handlePutConfig(w http.ResponseWriter, r *http.Request) {
 	var cfg config.AppConfig
 	if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
-		writeError(w, 400, "无效的配置数据: "+err.Error())
+		writeError(w, 400, "Invalid config data: "+err.Error())
 		return
 	}
 
@@ -30,7 +30,7 @@ func (s *Server) handlePutConfig(w http.ResponseWriter, r *http.Request) {
 	s.mu.Unlock()
 
 	if err := config.Save(cfg); err != nil {
-		writeError(w, 500, "保存配置失败: "+err.Error())
+		writeError(w, 500, "Failed to save config: "+err.Error())
 		return
 	}
 

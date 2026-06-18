@@ -1,4 +1,4 @@
-// Package config — JSON 配置文件持久化
+// Package config — JSON config file persistence
 package config
 
 import (
@@ -8,27 +8,27 @@ import (
 	"path/filepath"
 )
 
-// AppConfig 应用配置
+// AppConfig application configuration
 type AppConfig struct {
 	Local LocalConfig `json:"local"`
 }
 
-// LocalConfig 本地下载配置
+// LocalConfig local download configuration
 type LocalConfig struct {
 	LastURL             string `json:"last_url"`
-	ProxyMode           string `json:"proxy_mode"`            // "无" | "HTTP" | "SOCKS5"
+	ProxyMode           string `json:"proxy_mode"`            // "None" | "HTTP" | "SOCKS5"
 	ProxyHost           string `json:"proxy_host"`
 	ProxyPort           string `json:"proxy_port"`
 	OutputFormat        string `json:"output_format"`         // "mp4" | "webm" | "mkv"
 	ConcurrentFragments int    `json:"concurrent_fragments"`  // 1-32
-	Cookies             string `json:"cookies"`               // "无" | "Chrome" | "Firefox" | ...
+	Cookies             string `json:"cookies"`               // "None" | "Chrome" | "Firefox" | ...
 	CookiesPath         string `json:"cookies_path"`
 	SaveDir             string `json:"save_dir"`
 	KeepTempFiles       bool   `json:"keep_temp_files"`
 }
 
 
-// DefaultConfig 返回默认配置
+// DefaultConfig returns default configuration
 func DefaultConfig() AppConfig {
 	return AppConfig{
 		Local: LocalConfig{
@@ -45,7 +45,7 @@ func DefaultConfig() AppConfig {
 	}
 }
 
-// configPath 返回配置文件路径
+// configPath returns the config file path
 func configPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -54,7 +54,7 @@ func configPath() string {
 	return filepath.Join(home, ".FetchTubeWeb_config.json")
 }
 
-// Load 加载配置，文件不存在则返回默认值
+// Load loads config, returns defaults if file doesn't exist
 // Path returns the config file path
 func Path() string {
 	return configPath()
@@ -76,12 +76,12 @@ func Load() AppConfig {
 		return cfg
 	}
 
-	// 合并默认值
+	// Merge defaults
 	merge(&cfg, &saved)
 	return cfg
 }
 
-// Save 保存配置到磁盘
+// Save writes config to disk
 func Save(cfg AppConfig) error {
 	data, err := json.MarshalIndent(cfg, "", "  ")
 	if err != nil {
@@ -92,7 +92,7 @@ func Save(cfg AppConfig) error {
 	return os.WriteFile(path, data, 0644)
 }
 
-// merge 将 saved 中的非零值合并到 dst 中
+// merge copies non-zero values from saved into dst
 func merge(dst *AppConfig, saved *AppConfig) {
 	if saved.Local.LastURL != "" {
 		dst.Local.LastURL = saved.Local.LastURL
@@ -121,7 +121,7 @@ func merge(dst *AppConfig, saved *AppConfig) {
 	if saved.Local.SaveDir != "" {
 		dst.Local.SaveDir = saved.Local.SaveDir
 	}
-	// bool 字段特殊处理：仅当 saved 中为 true 才覆盖
+	// bool field: only override when saved is true
 	if saved.Local.KeepTempFiles {
 		dst.Local.KeepTempFiles = true
 	}

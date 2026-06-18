@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "版本号 (例如 2.0.0)"
+        description: "Version number (e.g. 2.0.0)"
         required: true
         default: ""
   push:
@@ -19,16 +19,16 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: 检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 安装 Go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
           cache-dependency-path: go.sum
 
-      - name: 解析版本号
+      - name: Parse version
         id: version
         shell: pwsh
         run: |
@@ -44,10 +44,10 @@ jobs:
           Write-Host "Version: $ver"
 
       # ============================================================
-      # 下载外部依赖（均为自包含单文件，无运行时依赖）
+      # Download external dependencies (all self-contained single files, no runtime deps)
       # ============================================================
 
-      - name: 下载 yt-dlp.exe (standalone, 自带 Python)
+      - name: Download yt-dlp.exe (standalone, bundles Python)
         shell: pwsh
         run: |
           $url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
@@ -55,7 +55,7 @@ jobs:
           Invoke-WebRequest -Uri $url -OutFile yt-dlp.exe -UseBasicParsing
           Write-Host "yt-dlp.exe: $([math]::Round((Get-Item yt-dlp.exe).Length / 1MB, 1)) MB"
 
-      - name: 下载 ffmpeg.exe (BtbN 静态构建, 无 DLL 依赖)
+      - name: Download ffmpeg.exe (BtbN static build, no DLL deps)
         shell: pwsh
         run: |
           $url = "https://github.com/BtbN/FFmpeg-Builds/releases/latest/download/ffmpeg-master-latest-win64-gpl.zip"
@@ -66,7 +66,7 @@ jobs:
           Copy-Item $ffmpegExe.FullName ffmpeg.exe
           Write-Host "ffmpeg.exe: $([math]::Round((Get-Item ffmpeg.exe).Length / 1MB, 1)) MB"
 
-      - name: 下载 node.exe (standalone)
+      - name: Download node.exe (standalone)
         shell: pwsh
         run: |
           $nodeVer = "22.11.0"
@@ -76,10 +76,10 @@ jobs:
           Write-Host "node.exe: $([math]::Round((Get-Item node.exe).Length / 1MB, 1)) MB"
 
       # ============================================================
-      # 编译 Go（静态链接，无运行时依赖）
+      # Build Go (static link, no runtime deps)
       # ============================================================
 
-      - name: 编译 FetchTubeWeb.exe
+      - name: Build FetchTubeWeb.exe
         shell: pwsh
         run: |
           $env:CGO_ENABLED = "0"
@@ -87,10 +87,10 @@ jobs:
           Write-Host "FetchTubeWeb.exe: $([math]::Round((Get-Item FetchTubeWeb.exe).Length / 1MB, 1)) MB"
 
       # ============================================================
-      # 打包（同一目录下 4 个 exe，用户解压即用）
+      # Package (4 exes in one directory, unzip and run)
       # ============================================================
 
-      - name: 创建发布包
+      - name: Create release package
         id: package
         shell: pwsh
         run: |
@@ -119,10 +119,10 @@ jobs:
           "zip=$zipName" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       # ============================================================
-      # 创建 GitHub Release
+      # Create GitHub Release
       # ============================================================
 
-      - name: 创建 Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: "v${{ steps.version.outputs.version }}"

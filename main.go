@@ -17,20 +17,20 @@ import (
 var version = "dev"
 
 func main() {
-	port := flag.Int("port", 8899, "HTTP 监听端口")
+	port := flag.Int("port", 8899, "HTTP listen port")
 	flag.Parse()
 
 	if *port < 1 || *port > 65535 {
-		log.Fatalf("无效端口号: %d（范围: 1-65535）", *port)
+		log.Fatalf("Invalid port: %d (range: 1-65535)", *port)
 	}
 
 	srv := handler.NewServer()
 
 	mux := http.NewServeMux()
 
-	// 静态文件（内嵌前端资源）
+	// Static files (embedded frontend assets)
 	mux.Handle("GET /static/", http.FileServer(http.FS(web.Assets)))
-	// 主页
+	// Home page
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" || r.URL.Path == "/index.html" {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -41,10 +41,10 @@ func main() {
 		http.NotFound(w, r)
 	})
 
-	// API 路由
+	// API routes
 	srv.SetupRoutes(mux)
 
-	// CORS + 日志中间件
+	// CORS + logging middleware
 	wrapped := withMiddleware(mux)
 
 	addr := fmt.Sprintf("127.0.0.1:%d", *port)
@@ -52,26 +52,26 @@ func main() {
 		Addr:         addr,
 		Handler:      wrapped,
 		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 0, // WebSocket 需要无超时
+		WriteTimeout: 0, // WebSocket needs no timeout
 		IdleTimeout:  120 * time.Second,
 	}
 
 	printBanner(*port)
 
-	// 自动打开浏览器
+	// Auto-open browser
 	go openBrowser(fmt.Sprintf("http://localhost:%d", *port))
 
 	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("服务器启动失败: %v", err)
+		log.Fatalf("Server failed to start: %v", err)
 	}
 }
 
 func printBanner(port int) {
 	fmt.Println(strings.Repeat("=", 56))
-	fmt.Printf("  🎬 YouTube 视频下载器 (Go WebUI)  v%s\n", version)
+	fmt.Printf("  🎬 YouTube Video Downloader (Go WebUI)  v%s\n", version)
 	fmt.Println(strings.Repeat("=", 56))
-	fmt.Printf("  WebUI 地址:  http://localhost:%d\n", port)
-	fmt.Printf("  按 Ctrl+C 停止服务\n")
+	fmt.Printf("  WebUI URL:  http://localhost:%d\n", port)
+	fmt.Printf("  Press Ctrl+C to stop\n")
 	fmt.Println(strings.Repeat("=", 56))
 }
 
@@ -87,7 +87,7 @@ func withMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// 日志
+		// Logging
 		start := time.Now()
 		next.ServeHTTP(w, r)
 		log.Printf("[http] %s %s %v", r.Method, r.URL.Path, time.Since(start))

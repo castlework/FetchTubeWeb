@@ -12,7 +12,7 @@ const state = {
   },
   tasks: {},        // { taskID: { id, title, url, status, percent, speed_mbps, total_mb, save_dir, ... } }
   taskOrder: [],    // ordered task IDs for rendering
-  selectedTasks: new Set(),  // 多选勾中的 taskID 集合
+  selectedTasks: new Set(),  // set of checked taskID
   pollTimer: null,
   folderTarget: null,
   fileTarget: null,
@@ -45,7 +45,7 @@ async function loadConfig() {
     const cfg = await API.getConfig();
     applyConfig(cfg);
   } catch (e) {
-    console.warn('加载配置失败:', e);
+    console.warn('Failed to load config:', e);
   }
 }
 
@@ -54,7 +54,7 @@ async function saveConfig() {
     const cfg = collectConfig();
     await API.saveConfig(cfg);
   } catch (e) {
-    console.warn('保存配置失败:', e);
+    console.warn('Failed to save config:', e);
   }
 }
 
@@ -548,7 +548,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ---- localStorage 持久化 ----
+// ---- localStorage persistence ----
 function persistTasks() {
   try {
     // 只持久化已完成/失败/取消的任务（活跃任务在页面刷新后由 WebSocket 恢复）
@@ -589,7 +589,7 @@ function persistTasks() {
     };
     localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
-    console.warn('持久化任务列表失败:', e);
+    console.warn('Failed to persist task list:', e);
   }
 }
 
@@ -616,7 +616,7 @@ function restoreTasks() {
       renderQueue();
     }
   } catch (e) {
-    console.warn('恢复任务列表失败:', e);
+    console.warn('Failed to restore task list:', e);
   }
 }
 

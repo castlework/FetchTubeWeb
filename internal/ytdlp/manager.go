@@ -15,17 +15,17 @@ import (
 	"time"
 )
 
-// 合并阶段超时配置
+// Merge phase timeout config
 const (
-	MergeTimeout   = 300 * time.Second // 合并超时：5 分钟（大文件合并需要更长时间）
+	MergeTimeout   = 300 * time.Second // Merge timeout: 5 minutes (large files need more time)
 	MergeStallSecs = 30 * time.Second
 	MaxRetries     = 2
 )
 
-// ProgressCallback 进度回调函数类型
+// ProgressCallback progress callback function type
 type ProgressCallback func(ProgressData)
 
-// ProgressData 进度数据
+// ProgressData progress data
 type ProgressData struct {
 	TaskID         string  `json:"task_id"`
 	Status         string  `json:"status"`
@@ -47,14 +47,14 @@ type ProgressData struct {
 	Title          string  `json:"title,omitempty"`
 	URL            string  `json:"url,omitempty"`
 	SaveDir        string  `json:"save_dir,omitempty"`
-	// 完成时的统计信息（随 finished 状态下发，前端持久化保留显示）
+	// Completion stats (sent with finished status, persisted by frontend)
 	AvgSpeedMBps      float64 `json:"avg_speed_mbps,omitempty"`
 	FinalSizeMB       float64 `json:"final_size_mb,omitempty"`
 	DownloadElapsed   int     `json:"download_elapsed,omitempty"`
 	MergeElapsedFinal float64 `json:"merge_elapsed_final,omitempty"`
 }
 
-// DownloadManager 管理单个下载任务的生命周期
+// DownloadManager manages a single download task lifecycle
 type DownloadManager struct {
 	mu        sync.Mutex
 	cmd       *exec.Cmd
@@ -63,17 +63,17 @@ type DownloadManager struct {
 	running   atomic.Bool
 }
 
-// NewDownloadManager 创建新的下载管理器
+// NewDownloadManager creates a new download manager
 func NewDownloadManager() *DownloadManager {
 	return &DownloadManager{}
 }
 
-// IsRunning 返回是否正在下载
+// IsRunning returns whether a download is in progress
 func (m *DownloadManager) IsRunning() bool {
 	return m.running.Load()
 }
 
-// Cancel 取消当前下载（线程安全，可多次调用）
+// Cancel cancels the current download (thread-safe, idempotent)
 func (m *DownloadManager) Cancel() {
 	if !m.cancelled.Swap(true) {
 		m.mu.Lock()
@@ -87,7 +87,7 @@ func (m *DownloadManager) Cancel() {
 	}
 }
 
-// Download 执行下载（阻塞），通过回调报告进度
+// Download executes the download (blocking), reports progress via callback
 func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallback) error {
 	m.cancelled.Store(false)
 	m.running.Store(true)
@@ -114,7 +114,7 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 		switch result {
 		case "done":
 			cleanupTempFiles(opts.SaveDir)
-			// finished 回调（含统计信息）已由 runOneDownload 发送，此处不再重复发送
+			// finished callback (with stats) already sent by runOneDownload, don't re-send
 			return nil
 		case "cancelled":
 			callback(ProgressData{Status: "cancelled"})
@@ -124,23 +124,23 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 			if attempt > MaxRetries {
 				callback(ProgressData{
 					Status:       "error",
-					ErrorMessage: fmt.Sprintf("合并超时（已重试 %d 次）。\n请尝试选择更低的分辨率，或检查磁盘空间。", MaxRetries),
+					ErrorMessage: fmt.Sprintf("Merge timed out (retried %d times).\nTry a lower resolution or check disk space.", MaxRetries),
 				})
-				return fmt.Errorf("合并超时")
+				return fmt.Errorf("merge timed out")
 			}
-			// 自动重试 — 已下载的流保留
+			// Auto-retry — downloaded streams are preserved
 			continue
 		case "error":
-			return nil // 错误已通过回调报告
+			return nil // error already reported via callback
 		}
 	}
 
 	return nil
 }
 
-// runOneDownload 执行一次下载尝试，返回结果状态
+// runOneDownload executes one download attempt, returns result status
 func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback ProgressCallback) string {
-	// 下载前清理碎片
+	// Pre-cleanup fragments before download
 	preCleanup(opts.SaveDir)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -156,7 +156,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 
 	ytdlp := FindYtDlp()
 	if ytdlp == "" {
-		callback(ProgressData{Status: "error", ErrorMessage: "未找到 yt-dlp.exe"})
+		callback(ProgressData{Status: "error", ErrorMessage: "yt-dlp.exe not found"})
 		return "error"
 	}
 
@@ -187,9 +187,9 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 		return "error"
 	}
 
-	// 持续消费 stderr（yt-dlp 的 ERROR 等输出在 stderr），
-	// 累积到 stderrBuf 供进程结束后做错误诊断。
-	// 注：实测确认 yt-dlp 的 [download] 进度行实际输出在 stdout，由下方主循环解析。
+	// Continuously consume stderr (yt-dlp ERROR output goes to stderr),
+	// accumulate in stderrBuf for error diagnosis after process exits.
+	// Note: confirmed that yt-dlp [download] progress lines actually go to stdout, parsed by the main loop below.
 	var stderrBuf strings.Builder
 	go func() {
 		sc := bufio.NewScanner(stderr)
@@ -210,18 +210,18 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 	lastMsgTime := time.Now()
 	var lastFileSize int64 = 0
 
-	// 关键修复：yt-dlp 的进度信息输出到 stdout，但默认用 \r 原地刷新，
-	// bufio.Scanner 默认按 \n 分割会导致一行进度都读不到。
-	// 解决：1) BuildDownloadArgs 已加 --newline 让进度行用 \n；
-	//       2) 自定义 SplitFunc 同时按 \r 与 \n 分割，双重保险。
+	// Key fix: yt-dlp progress info outputs to stdout, but defaults to \r for in-place refresh.
+	// bufio.Scanner with default \n split would miss all progress lines.
+	// Solution: 1) BuildDownloadArgs adds --newline to make progress lines use \n;
+	//           2) Custom SplitFunc splits on both \r and \n, as a safety net.
 	scanner := bufio.NewScanner(stdout)
-	scanner.Buffer(make([]byte, 64*1024), 1024*1024) // 大缓冲区
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024) // large buffer
 	scanner.Split(scanProgressLines)
 
 	for scanner.Scan() {
 		now := time.Now()
 
-		// 检查取消
+		// Check cancellation
 		if m.cancelled.Load() {
 			KillProcessTree(cmd)
 			return "cancelled"
@@ -239,7 +239,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 
 		lastMsgTime = now
 
-		// 下载中 → 计算已用时间
+		// Downloading — compute elapsed time
 		if data.Status == "downloading" {
 			data.ElapsedSeconds = int(now.Sub(downloadStart).Seconds())
 		}
@@ -247,7 +247,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 		if data.Status == "merging" && !mergePhase {
 			mergePhase = true
 			mergeStart = now
-			// 进入合并阶段，命令行换行，结束下载进度条原地刷新
+			// Entering merge phase, print newline to break the download progress bar
 			fmt.Fprintln(os.Stdout)
 		}
 
@@ -260,7 +260,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 			}
 		}
 
-		// 命令行实时刷新显示解析后的进度（速度/大小/耗时/剩余/进度条）
+		// Console real-time display of parsed progress (speed/size/elapsed/remaining/progress bar)
 		printProgressConsole(*data)
 
 		callback(*data)
@@ -271,7 +271,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 			return "error"
 		}
 
-		// 合并阶段超时检测
+		// Merge phase timeout detection
 		if mergePhase {
 			elapsed := now.Sub(mergeStart)
 			if elapsed > MergeTimeout {
@@ -279,7 +279,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 				KillProcessTree(cmd)
 				return "timeout"
 			}
-			// 僵死检测
+			// Stall detection
 			if now.Sub(lastMsgTime) > MergeStallSecs {
 				outputFiles := findOutputFiles(opts.SaveDir)
 				if len(outputFiles) > 0 {
@@ -287,7 +287,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 					if err == nil {
 						currentSize := stat.Size()
 						if currentSize == lastFileSize && currentSize > 0 {
-							// 文件大小稳定 → 合并已完成
+							// File size is stable → merge is complete
 							KillProcessTree(cmd)
 							data := ProgressData{
 								Status:         "merging",
@@ -307,10 +307,10 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 		}
 	}
 
-	// 等待进程结束
+	// Wait for process to end
 	_ = cmd.Wait()
 
-	// 检查 stderr 中是否有错误
+	// Check stderr for errors
 	if cmd.ProcessState != nil && !cmd.ProcessState.Success() {
 		errMsg := stderrBuf.String()
 		if errMsg != "" {
@@ -319,16 +319,16 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 		}
 	}
 
-	// 发送带统计信息的完成回调（平均速度/实际文件大小/下载耗时/合并耗时）
+	// Send finished callback with stats (avg speed / actual file size / download time / merge time)
 	sendFinishedStats(callback, opts, downloadStart, mergeStart, mergePhase)
 	return "done"
 }
 
-// parseProgressLine 解析 yt-dlp 的进度输出行
-// yt-dlp 在新版本中使用 --print progress 或解析默认输出
-// 我们通过 stderr 中的 ANSI 进度行来提取信息
+// parseProgressLine parses yt-dlp progress output line
+// yt-dlp uses --print progress or parses default output in newer versions
+// We extract progress via ANSI progress lines in stderr
 func parseProgressLine(line string) *ProgressData {
-	// yt-dlp 进度行格式示例:
+	// yt-dlp progress line format examples:
 	// [download]   5.0% of ~100.00MiB at  2.50MiB/s ETA 00:38 (frag 3/8)
 	// [download] 100% of 100.00MiB in 00:00:40
 	// [ExtractAudio] ...
@@ -336,18 +336,18 @@ func parseProgressLine(line string) *ProgressData {
 
 	line = strings.TrimSpace(line)
 
-	// 下载进度
+	// Download progress
 	if strings.Contains(line, "[download]") && strings.Contains(line, "%") {
 		data := &ProgressData{Status: "downloading"}
 
-		// 百分比
+		// Percentage
 		if re := regexp.MustCompile(`(\d+\.?\d*)%`); re != nil {
 			if m := re.FindStringSubmatch(line); len(m) >= 2 {
 				fmt.Sscanf(m[1], "%f", &data.Percent)
 			}
 		}
 
-		// 下载大小
+		// Download size
 		if re := regexp.MustCompile(`of\s+~?(\d+\.?\d*)([KMG])iB`); re != nil {
 			if m := re.FindStringSubmatch(line); len(m) >= 3 {
 				size, _ := parseSize(m[1], m[2])
@@ -355,12 +355,12 @@ func parseProgressLine(line string) *ProgressData {
 			}
 		}
 
-		// 已下载量 = 百分比 × 总大小
+		// Downloaded amount = percentage × total size
 		if data.Percent > 0 && data.TotalMB > 0 {
 			data.DownloadedMB = data.Percent / 100.0 * data.TotalMB
 		}
 
-		// 速度
+		// Speed
 		if re := regexp.MustCompile(`at\s+(\d+\.?\d*)([KMG])iB/s`); re != nil {
 			if m := re.FindStringSubmatch(line); len(m) >= 3 {
 				speed, _ := parseSize(m[1], m[2])
@@ -381,7 +381,7 @@ func parseProgressLine(line string) *ProgressData {
 			}
 		}
 
-		// 分片信息
+		// Fragment info
 		if re := regexp.MustCompile(`frag\s+(\d+)/(\d+)`); re != nil {
 			if m := re.FindStringSubmatch(line); len(m) >= 3 {
 				fmt.Sscanf(m[1], "%d", &data.FragmentIndex)
@@ -392,17 +392,17 @@ func parseProgressLine(line string) *ProgressData {
 		return data
 	}
 
-	// 下载完成（单个流）
+	// Download complete (single stream)
 	if strings.Contains(line, "[download]") && strings.Contains(line, "100%") {
 		return &ProgressData{Status: "downloading", Percent: 100.0}
 	}
 
-	// 合并阶段
+	// Merge phase
 	if strings.Contains(line, "[Merger]") || strings.Contains(line, "[VideoConvertor]") {
 		return &ProgressData{Status: "merging", Percent: 100.0}
 	}
 
-	// ffmpeg 合并
+	// ffmpeg merge
 	if strings.Contains(line, "[ffmpeg]") {
 		return &ProgressData{Status: "merging", Percent: 100.0}
 	}
@@ -410,7 +410,7 @@ func parseProgressLine(line string) *ProgressData {
 	return nil
 }
 
-// parseSize 解析带单位的大小为 MB
+// parseSize parses size with unit into MB
 func parseSize(value, unit string) (float64, error) {
 	var num float64
 	fmt.Sscanf(value, "%f", &num)
@@ -425,22 +425,22 @@ func parseSize(value, unit string) (float64, error) {
 	return num, nil
 }
 
-// translateSimple 简单错误翻译
+// translateSimple simple error translation
 func translateSimple(msg string) string {
 	lower := strings.ToLower(msg)
 	if strings.Contains(lower, "sign in") || strings.Contains(lower, "bot") {
-		return "YouTube 要求验证身份。请使用 Cookies 登录。"
+		return "YouTube requires identity verification. Please use Cookies login."
 	}
 	if strings.Contains(lower, "429") {
-		return "请求过于频繁（429），请稍后再试。"
+		return "Too many requests (429). Please try again later."
 	}
 	if strings.Contains(lower, "unavailable") || strings.Contains(lower, "private") {
-		return "该视频不可用（已删除或私密）。"
+		return "This video is unavailable (deleted or private)."
 	}
 	return msg
 }
 
-// 文件清理函数
+// File cleanup functions
 
 func preCleanup(saveDir string) {
 	var cleaned int
@@ -502,10 +502,10 @@ func findOutputFiles(saveDir string) []string {
 	return files
 }
 
-// FormatDuration 格式化秒数为可读字符串
+// FormatDuration formats seconds to a readable string
 func FormatDuration(seconds int) string {
 	if seconds <= 0 {
-		return "未知"
+		return "Unknown"
 	}
 	h := seconds / 3600
 	m := (seconds % 3600) / 60
@@ -516,20 +516,20 @@ func FormatDuration(seconds int) string {
 	return fmt.Sprintf("%d:%02d", m, s)
 }
 
-// FormatCount 格式化大数字
+// FormatCount formats large numbers
 func FormatCount(n int) string {
 	if n >= 10000 {
-		return fmt.Sprintf("%.1f万", float64(n)/10000)
+		return fmt.Sprintf("%.1fw", float64(n)/10000)
 	}
 	return fmt.Sprintf("%d", n)
 }
 
-// ---- 命令行诊断输出 ----
+// ---- Console diagnostic output ----
 
-// scanProgressLines 是 bufio.Scanner 的自定义 SplitFunc，
-// 同时按回车符 \r 和换行符 \n 分割。
-// yt-dlp 默认进度行用 \r 原地刷新；加了 --newline 后用 \n。
-// 这样两种情况都能被逐行解析。
+// scanProgressLines is a custom SplitFunc for bufio.Scanner,
+// splitting on both carriage return \r and line feed \n.
+// yt-dlp default progress lines use \r for in-place refresh; with --newline they use \n.
+// This handles both cases for line-by-line parsing.
 func scanProgressLines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return 0, nil, nil
@@ -545,12 +545,13 @@ func scanProgressLines(data []byte, atEOF bool) (advance int, token []byte, err 
 	return 0, nil, nil
 }
 
-// printProgressConsole 在命令行实时刷新下载进度。
-// 下载阶段用 \r 原地刷新单行（紧凑格式，避免终端换行混乱），合并/完成阶段换行输出。
+// printProgressConsole displays download progress in the terminal in real time.
+// Download phase uses \r for single-line in-place refresh (compact format, avoids terminal clutter),
+// merge/complete phases output newlines.
 func printProgressConsole(data ProgressData) {
 	switch data.Status {
 	case "downloading":
-		// 精简单行：百分比 速度 (大小) 剩余时间 分片
+		// Compact single line: percentage speed (size) remaining fragments
 		line := fmt.Sprintf("\r  %.1f%%", data.Percent)
 		if data.SpeedMBps > 0 {
 			line += fmt.Sprintf("  %.1f MB/s", data.SpeedMBps)
@@ -572,27 +573,27 @@ func printProgressConsole(data ProgressData) {
 		if data.MergeDone {
 			suffix = "  done"
 		}
-		fmt.Fprintf(os.Stdout, "\r  合并中  已用 %.0fs  剩余 %s%s  ",
+		fmt.Fprintf(os.Stdout, "\r  Merging  elapsed %.0fs  remaining %s%s  ",
 			data.MergeElapsed, FormatDuration(data.MergeRemaining), suffix)
 	case "finished":
-		fmt.Fprintf(os.Stdout, "\r  完成\n")
+		fmt.Fprintf(os.Stdout, "\r  Done\n")
 	case "error":
-		fmt.Fprintf(os.Stdout, "\n  失败: %s\n", data.ErrorMessage)
+		fmt.Fprintf(os.Stdout, "\n  Failed: %s\n", data.ErrorMessage)
 	case "cancelled":
-		fmt.Fprintf(os.Stdout, "\n  已取消\n")
+		fmt.Fprintf(os.Stdout, "\n  Cancelled\n")
 	case "retry":
-		fmt.Fprintf(os.Stdout, "\n  重试 %d/%d...\n", data.RetryAttempt, data.RetryMax)
+		fmt.Fprintf(os.Stdout, "\n  Retry %d/%d...\n", data.RetryAttempt, data.RetryMax)
 	}
 }
 
-// sendFinishedStats 计算并下发任务完成时的统计信息：
-// 平均速度、实际文件大小、下载耗时、合并耗时。
-// 这些信息随 finished 状态发送，前端会持久化保留显示。
+// sendFinishedStats computes and sends completion stats:
+// average speed, actual file size, download time, merge time.
+// These are sent with the finished status, and the frontend persists them.
 func sendFinishedStats(callback ProgressCallback, opts DownloadOptions, downloadStart, mergeStart time.Time, mergePhase bool) {
 	now := time.Now()
 	downloadDuration := now.Sub(downloadStart)
 
-	// 获取最终输出文件的实际大小
+	// Get actual size of the final output file
 	var finalSizeMB float64
 	if files := findOutputFiles(opts.SaveDir); len(files) > 0 {
 		if stat, err := os.Stat(files[0]); err == nil {
@@ -600,7 +601,7 @@ func sendFinishedStats(callback ProgressCallback, opts DownloadOptions, download
 		}
 	}
 
-	// 平均下载速度 = 文件大小 / 下载耗时
+	// Average download speed = file size / download duration
 	avgSpeed := 0.0
 	if downloadDuration.Seconds() > 0 && finalSizeMB > 0 {
 		avgSpeed = finalSizeMB / downloadDuration.Seconds()
@@ -621,7 +622,7 @@ func sendFinishedStats(callback ProgressCallback, opts DownloadOptions, download
 	callback(data)
 }
 
-// ---- 测试辅助 ----
+// ---- Test helpers ----
 
-// TestData 用于测试的固定数据
+// TestData fixed data for testing
 var TestData = `{"title":"Test Video","webpage_url":"https://youtube.com/watch?v=test"}`

@@ -11,11 +11,11 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // 允许所有来源（本地应用）
+		return true // Allow all origins (local app)
 	},
 }
 
-// WebSocketHub 管理所有 WebSocket 连接并广播进度消息
+// WebSocketHub manages all WebSocket connections and broadcasts progress messages
 type WebSocketHub struct {
 	clients    map[*websocket.Conn]bool
 	register   chan *websocket.Conn
@@ -33,7 +33,7 @@ func newWebSocketHub() *WebSocketHub {
 	}
 }
 
-// Broadcast 发送消息到所有已连接的客户端
+// Broadcast sends a message to all connected clients
 func (h *WebSocketHub) Broadcast(msg interface{}) {
 	h.broadcast <- msg
 }
@@ -45,7 +45,7 @@ func (h *WebSocketHub) run() {
 			h.mu.Lock()
 			h.clients[conn] = true
 			h.mu.Unlock()
-			log.Printf("[ws] 客户端已连接 (当前 %d)", len(h.clients))
+			log.Printf("[ws] client connected (current %d)", len(h.clients))
 
 		case conn := <-h.unregister:
 			h.mu.Lock()
@@ -54,14 +54,14 @@ func (h *WebSocketHub) run() {
 				conn.Close()
 			}
 			h.mu.Unlock()
-			log.Printf("[ws] 客户端已断开 (当前 %d)", len(h.clients))
+			log.Printf("[ws] client disconnected (current %d)", len(h.clients))
 
 		case msg := <-h.broadcast:
 			h.mu.RLock()
 			for conn := range h.clients {
 				data, _ := json.Marshal(msg)
 				if err := conn.WriteMessage(websocket.TextMessage, data); err != nil {
-					log.Printf("[ws] 发送失败: %v", err)
+					log.Printf("[ws] send failed: %v", err)
 					go func(c *websocket.Conn) {
 						h.unregister <- c
 					}(conn)
@@ -72,18 +72,18 @@ func (h *WebSocketHub) run() {
 	}
 }
 
-// handleWebSocket 处理 WebSocket 升级
+// handleWebSocket handles WebSocket upgrade
 // GET /ws/progress
 func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("[ws] 升级失败: %v", err)
+		log.Printf("[ws] upgrade failed: %v", err)
 		return
 	}
 
 	s.wsHub.register <- conn
 
-	// 保持连接活跃（读取循环，检测断开）
+	// Keep connection alive (read loop, detects disconnects)
 	go func() {
 		defer func() {
 			s.wsHub.unregister <- conn

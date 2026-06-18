@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// DirEntry 目录条目
+// DirEntry directory entry
 type DirEntry struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 	IsDir bool  `json:"is_dir"`
 }
 
-// handleDrives 返回 Windows 驱动器列表
+// handleDrives returns Windows drive list
 // GET /api/drives
 func (s *Server) handleDrives(w http.ResponseWriter, r *http.Request) {
 	var drives []DirEntry
@@ -32,30 +32,30 @@ func (s *Server) handleDrives(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, drives)
 }
 
-// handleBrowse 浏览目录
+// handleBrowse browses directories
 // GET /api/browse?path=C:\Users
 func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Query().Get("path")
 	if path == "" {
-		// 返回驱动器列表
+		// Return drive list
 		s.handleDrives(w, r)
 		return
 	}
 
-	// 安全检查：防止路径穿越
+	// Security check: prevent path traversal
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		writeError(w, 400, "无效的路径")
+		writeError(w, 400, "Invalid path")
 		return
 	}
 
 	entries, err := os.ReadDir(absPath)
 	if err != nil {
-		// 尝试返回父目录的内容
+		// Try returning parent directory contents
 		parent := filepath.Dir(absPath)
 		entries, err = os.ReadDir(parent)
 		if err != nil {
-			writeError(w, 400, "无法访问该目录: "+err.Error())
+			writeError(w, 400, "Cannot access directory: "+err.Error())
 			return
 		}
 		absPath = parent
@@ -63,7 +63,7 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request) {
 
 	var result []DirEntry
 	for _, e := range entries {
-		// 跳过隐藏文件和系统文件
+		// Skip hidden and system files
 		if strings.HasPrefix(e.Name(), "$") || strings.HasPrefix(e.Name(), "System") {
 			continue
 		}
@@ -76,12 +76,12 @@ func (s *Server) handleBrowse(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 按名称排序
+	// Sort by name
 	sort.Slice(result, func(i, j int) bool {
 		return strings.ToLower(result[i].Name) < strings.ToLower(result[j].Name)
 	})
 
-	// 添加父目录
+	// Add parent directory
 	parent := filepath.Dir(absPath)
 	if parent != absPath {
 		result = append([]DirEntry{{

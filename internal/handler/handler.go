@@ -10,7 +10,7 @@ import (
 	"FetchTubeWeb/internal/ytdlp"
 )
 
-// Server 封装所有 HTTP 处理器和共享状态
+// Server encapsulates all HTTP handlers and shared state
 type Server struct {
 	mu        sync.Mutex
 	cfg       config.AppConfig
@@ -18,7 +18,7 @@ type Server struct {
 	wsHub     *WebSocketHub
 }
 
-// NewServer 创建新的服务器实例
+// NewServer creates a new server instance
 func NewServer() *Server {
 	s := &Server{
 		cfg:   config.Load(),
@@ -34,9 +34,9 @@ func NewServer() *Server {
 	return s
 }
 
-// SetupRoutes 注册所有路由到 ServeMux
+// SetupRoutes registers all routes on the ServeMux
 func (s *Server) SetupRoutes(mux *http.ServeMux) {
-	// API 路由
+	// API routes
 	mux.HandleFunc("GET /api/info", s.handleInfo)
 	mux.HandleFunc("POST /api/download", s.handleDownload)
 	mux.HandleFunc("GET /api/tasks", s.handleListTasks)
@@ -55,10 +55,10 @@ func (s *Server) SetupRoutes(mux *http.ServeMux) {
 	// WebSocket
 	mux.HandleFunc("GET /ws/progress", s.handleWebSocket)
 
-	log.Println("[server] 路由已注册")
+	log.Println("[server] routes registered")
 }
 
-// writeJSON 写入 JSON 响应
+// writeJSON writes a JSON response
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -66,12 +66,12 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-// writeError 写入错误响应
+// writeError writes an error response
 func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, map[string]string{"error": message})
 }
 
-// corsMiddleware 处理 CORS 预检请求
+// corsMiddleware handles CORS preflight requests
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

@@ -1,9 +1,9 @@
-// WebSocket 进度推送
+// WebSocket progress push
 
 const WS = {
   conn: null,
   reconnectTimer: null,
-  onMessage: null,  // 回调函数
+  onMessage: null,  // callback function
 
   connect() {
     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -13,7 +13,7 @@ const WS = {
       this.conn = new WebSocket(url);
 
       this.conn.onopen = () => {
-        console.log('[ws] 已连接');
+        console.log('[ws] connected');
         if (this.reconnectTimer) {
           clearTimeout(this.reconnectTimer);
           this.reconnectTimer = null;
@@ -27,20 +27,20 @@ const WS = {
             this.onMessage(data);
           }
         } catch (e) {
-          console.error('[ws] 解析失败:', e);
+          console.error('[ws] parse failed:', e);
         }
       };
 
       this.conn.onclose = () => {
-        console.log('[ws] 已断开');
+        console.log('[ws] disconnected');
         this.scheduleReconnect();
       };
 
       this.conn.onerror = (err) => {
-        console.error('[ws] 错误:', err);
+        console.error('[ws] error:', err);
       };
     } catch (e) {
-      console.error('[ws] 连接失败:', e);
+      console.error('[ws] connection failed:', e);
       this.scheduleReconnect();
     }
   },

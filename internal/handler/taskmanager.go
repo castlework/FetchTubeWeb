@@ -11,14 +11,14 @@ import (
 
 const maxConcurrent = 3
 
-// TaskManager 管理多个并发下载任务
+// TaskManager manages multiple concurrent download tasks
 type TaskManager struct {
 	mu        sync.RWMutex
 	tasks     map[string]*DownloadTask
 	semaphore chan struct{}
 }
 
-// DownloadTask 单个下载任务
+// DownloadTask a single download task
 type DownloadTask struct {
 	ID      string
 	Manager *ytdlp.DownloadManager
@@ -26,7 +26,7 @@ type DownloadTask struct {
 	Info    TaskInfo
 }
 
-// TaskInfo 任务状态（API 响应用）
+// TaskInfo task status (for API responses)
 type TaskInfo struct {
 	TaskID       string  `json:"task_id"`
 	URL          string  `json:"url"`
@@ -40,7 +40,7 @@ type TaskInfo struct {
 	SaveDir      string  `json:"save_dir,omitempty"`
 }
 
-// NewTaskManager 创建任务管理器
+// NewTaskManager creates a task manager
 func NewTaskManager() *TaskManager {
 	return &TaskManager{
 		tasks:     make(map[string]*DownloadTask),
@@ -48,8 +48,8 @@ func NewTaskManager() *TaskManager {
 	}
 }
 
-// Enqueue 将下载任务加入队列，立即返回 taskID，异步执行
-// cleanup 在任务结束时调用（可用于删除临时文件），可为 nil
+// Enqueue adds a download task to the queue, returns taskID immediately, executes async
+// cleanup is called when the task ends (can be used to delete temp files), may be nil
 func (tm *TaskManager) Enqueue(opts ytdlp.DownloadOptions, title string, broadcast func(ytdlp.ProgressData), cleanup func()) string {
 	taskID := genTaskID()
 
@@ -70,7 +70,7 @@ func (tm *TaskManager) Enqueue(opts ytdlp.DownloadOptions, title string, broadca
 	tm.tasks[taskID] = task
 	tm.mu.Unlock()
 
-	// 广播队列状态
+	// Broadcast queued status
 	broadcast(ytdlp.ProgressData{
 		TaskID:  taskID,
 		Status:  "queued",
@@ -84,13 +84,13 @@ func (tm *TaskManager) Enqueue(opts ytdlp.DownloadOptions, title string, broadca
 	return taskID
 }
 
-// run 在 goroutine 中执行下载任务
+// run executes the download task in a goroutine
 func (tm *TaskManager) run(task *DownloadTask, broadcast func(ytdlp.ProgressData), cleanup func()) {
 	if cleanup != nil {
 		defer cleanup()
 	}
 
-	// 获取并发槽位
+	// Acquire concurrency slot
 	tm.semaphore <- struct{}{}
 	defer func() { <-tm.semaphore }()
 
@@ -101,7 +101,7 @@ func (tm *TaskManager) run(task *DownloadTask, broadcast func(ytdlp.ProgressData
 		Title:  task.Info.Title,
 	})
 
-	// 执行下载
+	// Execute download
 	_ = task.Manager.Download(task.Opts, func(data ytdlp.ProgressData) {
 		data.TaskID = task.ID
 		data.Title = task.Info.Title
@@ -109,35 +109,35 @@ func (tm *TaskManager) run(task *DownloadTask, broadcast func(ytdlp.ProgressData
 		data.SaveDir = task.Info.SaveDir
 		broadcast(data)
 
-		// 同步更新 TaskInfo
+		// Sync update TaskInfo
 		tm.updateStatus(task.ID, data.Status, data.Percent, data.SpeedMBps, data.TotalMB, data.ETASeconds, data.ErrorMessage)
 	})
 }
 
-// Cancel 取消指定任务
+// Cancel cancels the specified task
 func (tm *TaskManager) Cancel(taskID string) error {
 	tm.mu.RLock()
 	task, ok := tm.tasks[taskID]
 	tm.mu.RUnlock()
 	if !ok {
-		return fmt.Errorf("任务不存在: %s", taskID)
+		return fmt.Errorf("Task not found: %s", taskID)
 	}
 	task.Manager.Cancel()
 	return nil
 }
 
-// Remove 从任务列表中移除指定任务（不取消正在进行的下载）
+// Remove removes the specified task from the list (does not cancel active downloads)
 func (tm *TaskManager) Remove(taskID string) error {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
 	if _, ok := tm.tasks[taskID]; !ok {
-		return fmt.Errorf("任务不存在: %s", taskID)
+		return fmt.Errorf("Task not found: %s", taskID)
 	}
 	delete(tm.tasks, taskID)
 	return nil
 }
 
-// RemoveBatch 批量移除任务
+// RemoveBatch batch removes tasks
 func (tm *TaskManager) RemoveBatch(taskIDs []string) int {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
@@ -151,7 +151,7 @@ func (tm *TaskManager) RemoveBatch(taskIDs []string) int {
 	return count
 }
 
-// Get 获取指定任务
+// Get retrieves the specified task
 func (tm *TaskManager) Get(taskID string) (*DownloadTask, bool) {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
@@ -159,7 +159,7 @@ func (tm *TaskManager) Get(taskID string) (*DownloadTask, bool) {
 	return task, ok
 }
 
-// List 返回所有任务的 TaskInfo 列表
+// List returns all tasks' TaskInfo list
 func (tm *TaskManager) List() []TaskInfo {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
@@ -170,7 +170,7 @@ func (tm *TaskManager) List() []TaskInfo {
 	return result
 }
 
-// updateStatus 更新任务状态（线程安全）
+// updateStatus updates task status (thread-safe)
 func (tm *TaskManager) updateStatus(taskID, status string, percent, speed, totalMB float64, eta int, errMsg string) {
 	tm.mu.Lock()
 	defer tm.mu.Unlock()
@@ -186,7 +186,7 @@ func (tm *TaskManager) updateStatus(taskID, status string, percent, speed, total
 	}
 }
 
-// genTaskID 生成唯一任务 ID（时间戳 base32）
+// genTaskID generates a unique task ID (timestamp base32)
 func genTaskID() string {
 	var buf [8]byte
 	ns := uint64(time.Now().UnixNano())

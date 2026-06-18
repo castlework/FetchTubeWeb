@@ -15,12 +15,12 @@ import (
 	"FetchTubeWeb/internal/ytdlp"
 )
 
-// handleInfo 处理视频信息提取请求
+// handleInfo handles video info extraction requests
 // GET /api/info?url=...&proxy=...&cookies=...
 func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")
 	if url == "" {
-		writeError(w, 400, "缺少 url 参数")
+		writeError(w, 400, "Missing url parameter")
 		return
 	}
 
@@ -37,7 +37,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, info)
 }
 
-// handleHealth 健康检查
+// handleHealth health check
 // GET /api/health
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]interface{}{
@@ -49,7 +49,7 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleDownload 加入下载队列
+// handleDownload enqueues a download job
 // POST /api/download
 func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 	var req struct {
@@ -66,17 +66,17 @@ func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, 400, "无效的请求体: "+err.Error())
+		writeError(w, 400, "Invalid request body: "+err.Error())
 		return
 	}
 
 	if req.URL == "" || req.FormatID == "" {
-		writeError(w, 400, "url 和 format_id 为必填项")
+		writeError(w, 400, "url and format_id are required")
 		return
 	}
 
 	if req.SaveDir == "" {
-		writeError(w, 400, "save_dir 为必填项")
+		writeError(w, 400, "save_dir is required")
 		return
 	}
 
@@ -114,18 +114,18 @@ func (s *Server) handleDownload(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleListTasks 列出所有任务
+// handleListTasks lists all tasks
 // GET /api/tasks
 func (s *Server) handleListTasks(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, s.tasks.List())
 }
 
-// handleCancelTask 取消指定任务
+// handleCancelTask cancels a specified task
 // POST /api/tasks/{taskID}/cancel
 func (s *Server) handleCancelTask(w http.ResponseWriter, r *http.Request) {
 	taskID := r.PathValue("taskID")
 	if taskID == "" {
-		writeError(w, 400, "缺少 taskID")
+		writeError(w, 400, "Missing taskID")
 		return
 	}
 
@@ -137,12 +137,12 @@ func (s *Server) handleCancelTask(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"status": "cancelled"})
 }
 
-// handleDeleteTask 从任务列表中删除指定任务（不影响正在进行的下载）
+// handleDeleteTask removes a task from the list (does not affect active downloads)
 // DELETE /api/tasks/{taskID}
 func (s *Server) handleDeleteTask(w http.ResponseWriter, r *http.Request) {
 	taskID := r.PathValue("taskID")
 	if taskID == "" {
-		writeError(w, 400, "缺少 taskID")
+		writeError(w, 400, "Missing taskID")
 		return
 	}
 
@@ -154,18 +154,18 @@ func (s *Server) handleDeleteTask(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"status": "deleted"})
 }
 
-// handleBatchDeleteTasks 批量删除任务
+// handleBatchDeleteTasks batch deletes tasks
 // POST /api/tasks/batch-delete
 func (s *Server) handleBatchDeleteTasks(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		TaskIDs []string `json:"task_ids"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, 400, "无效的请求体: "+err.Error())
+		writeError(w, 400, "Invalid request body: "+err.Error())
 		return
 	}
 	if len(req.TaskIDs) == 0 {
-		writeError(w, 400, "task_ids 不能为空")
+		writeError(w, 400, "task_ids cannot be empty")
 		return
 	}
 
@@ -176,51 +176,51 @@ func (s *Server) handleBatchDeleteTasks(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-// handleOpenDir 在文件资源管理器中打开指定目录
+// handleOpenDir opens the specified directory in file explorer
 // POST /api/open-dir
 func (s *Server) handleOpenDir(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Path string `json:"path"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, 400, "无效的请求体: "+err.Error())
+		writeError(w, 400, "Invalid request body: "+err.Error())
 		return
 	}
 	if req.Path == "" {
-		writeError(w, 400, "缺少 path 参数")
+		writeError(w, 400, "Missing path parameter")
 		return
 	}
 
-	// 先检查目录是否存在
+	// Check if directory exists first
 	if info, err := os.Stat(req.Path); err != nil || !info.IsDir() {
-		writeError(w, 400, "目录不存在: "+req.Path)
+		writeError(w, 400, "Directory does not exist: "+req.Path)
 		return
 	}
 
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		// explorer.exe 会通过 COM 委托给已有 shell 进程然后退出，
-		// 其退出码不可靠（有时返回 1 但窗口已正常打开），
-		// 因此使用 Start() 启动后立即分离，不等待退出。
+		// explorer.exe delegates to existing shell process via COM and then exits.
+		// Its exit code is unreliable (sometimes returns 1 even when window is open),
+		// so we use Start() to launch and detach immediately, without waiting.
 		cmd = exec.Command("explorer", req.Path)
 		if err := cmd.Start(); err != nil {
-			writeError(w, 500, "打开目录失败: "+err.Error())
+			writeError(w, 500, "Failed to open directory: "+err.Error())
 			return
 		}
-		// 释放进程句柄，避免僵尸进程
+		// Release process handle to avoid zombie processes
 		go cmd.Wait()
 	case "darwin":
 		cmd = exec.Command("open", req.Path)
 		if err := cmd.Start(); err != nil {
-			writeError(w, 500, "打开目录失败: "+err.Error())
+			writeError(w, 500, "Failed to open directory: "+err.Error())
 			return
 		}
 		go cmd.Wait()
 	default:
 		cmd = exec.Command("xdg-open", req.Path)
 		if err := cmd.Start(); err != nil {
-			writeError(w, 500, "打开目录失败: "+err.Error())
+			writeError(w, 500, "Failed to open directory: "+err.Error())
 			return
 		}
 		go cmd.Wait()
@@ -229,7 +229,7 @@ func (s *Server) handleOpenDir(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"status": "opened"})
 }
 
-// handlePickFolder 弹出原生系统文件夹选择对话框，返回用户选中的路径
+// handlePickFolder opens a native system folder picker dialog, returns the selected path
 // POST /api/pick-folder
 func (s *Server) handlePickFolder(w http.ResponseWriter, r *http.Request) {
 	var path string
@@ -260,12 +260,12 @@ func (s *Server) handlePickFolder(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, map[string]string{"path": path})
 }
 
-// handleThumbnail 代理获取缩略图（解决浏览器无法直连 i.ytimg.com 的问题）
+// handleThumbnail proxies thumbnail fetching (solves browser being unable to reach i.ytimg.com directly)
 // GET /api/thumbnail?url=...&proxy=...
 func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
 	imgURL := r.URL.Query().Get("url")
 	if imgURL == "" {
-		writeError(w, 400, "缺少 url 参数")
+		writeError(w, 400, "Missing url parameter")
 		return
 	}
 
@@ -275,7 +275,7 @@ func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
 	if proxyStr != "" {
 		proxyURL, err := url.Parse(proxyStr)
 		if err != nil {
-			writeError(w, 400, "无效的代理地址: "+err.Error())
+			writeError(w, 400, "Invalid proxy address: "+err.Error())
 			return
 		}
 		transport := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
@@ -286,13 +286,13 @@ func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := client.Get(imgURL)
 	if err != nil {
-		writeError(w, 502, "获取缩略图失败: "+err.Error())
+		writeError(w, 502, "Failed to fetch thumbnail: "+err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		writeError(w, 502, fmt.Sprintf("获取缩略图失败: HTTP %d", resp.StatusCode))
+		writeError(w, 502, fmt.Sprintf("Failed to fetch thumbnail: HTTP %d", resp.StatusCode))
 		return
 	}
 
@@ -306,16 +306,16 @@ func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
 }
 
 func pickFolderWindows() (path string, cancelled bool, err error) {
-	// 用 OpenFileDialog 实现：外观就是现代文件对话框，
-	// 用户进入目标文件夹后直接点"打开"即可（FileName 只是占位提示符，取目录部分）
+	// Uses OpenFileDialog: displays a modern file dialog,
+	// user navigates into the target folder and clicks "Open" (FileName is just a placeholder, we take the directory part)
 	psScript := `
 Add-Type -AssemblyName System.Windows.Forms
 $d = New-Object System.Windows.Forms.OpenFileDialog
-$d.Title = '选择保存目录 — 进入目标文件夹后点击"打开"'
-$d.Filter = '所有文件 (*.*)|*.*'
+$d.Title = 'Select save directory — Enter the target folder then click "Open"'
+$d.Filter = 'All files (*.*)|*.*'
 $d.CheckFileExists = $false
 $d.CheckPathExists = $true
-$d.FileName = '【选择此文件夹】'
+$d.FileName = '[Select This Folder]'
 $d.Multiselect = $false
 $d.RestoreDirectory = $true
 if ($d.ShowDialog() -eq 'OK') { [System.IO.Path]::GetDirectoryName($d.FileName) } else { '' }
@@ -323,37 +323,37 @@ if ($d.ShowDialog() -eq 'OK') { [System.IO.Path]::GetDirectoryName($d.FileName) 
 	cmd := exec.Command("powershell", "-sta", "-NoProfile", "-Command", psScript)
 	output, err := cmd.Output()
 	if err != nil {
-		return "", false, fmt.Errorf("调出文件夹选择对话框失败: %w", err)
+		return "", false, fmt.Errorf("Failed to open folder picker dialog: %w", err)
 	}
 	result := strings.TrimSpace(string(output))
 	if result == "" {
-		return "", true, nil // 用户取消了选择
+		return "", true, nil // user cancelled selection
 	}
 	return result, false, nil
 }
 
 func pickFolderMacOS() (path string, cancelled bool, err error) {
 	cmd := exec.Command("osascript", "-e",
-		`POSIX path of (choose folder with prompt "选择保存目录")`)
+		`POSIX path of (choose folder with prompt "Select save directory")`)
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
 			return "", true, nil
 		}
-		return "", false, fmt.Errorf("调出文件夹选择对话框失败: %w", err)
+		return "", false, fmt.Errorf("Failed to open folder picker dialog: %w", err)
 	}
 	return strings.TrimSpace(string(output)), false, nil
 }
 
 func pickFolderLinux() (path string, cancelled bool, err error) {
 	cmd := exec.Command("zenity", "--file-selection", "--directory",
-		"--title=选择保存目录")
+		"--title=Select save directory")
 	output, err := cmd.Output()
 	if err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 1 {
 			return "", true, nil
 		}
-		return "", false, fmt.Errorf("调出文件夹选择对话框失败（请安装 zenity）: %w", err)
+		return "", false, fmt.Errorf("Failed to open folder picker dialog (install zenity): %w", err)
 	}
 	return strings.TrimSpace(string(output)), false, nil
 }

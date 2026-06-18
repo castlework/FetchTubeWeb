@@ -1,29 +1,29 @@
-// Package models — 数据模型定义
+// Package models — data model definitions
 package models
 
-// FormatOption 单个可下载的视频格式（视频流 + 默认音频流）
+// FormatOption a single downloadable video format (video stream + default audio stream)
 type FormatOption struct {
-	FormatID    string  `json:"format_id"`    // yt-dlp 格式 ID，如 "299+140"
-	VideoID     string  `json:"video_id"`     // 纯视频流 ID，如 "299"（搭配自定义音轨）
+	FormatID    string  `json:"format_id"`    // yt-dlp format ID, e.g. "299+140"
+	VideoID     string  `json:"video_id"`     // video-only stream ID, e.g. "299" (for custom audio tracks)
 	Resolution  string  `json:"resolution"`   // "1920x1080"
-	FPS         int     `json:"fps"`          // 帧率
-	Codec       string  `json:"codec"`        // 视频编码
-	AudioCodec  string  `json:"audio_codec"`  // 默认音频编码
-	FileSizeMB  float64 `json:"file_size_mb"` // 文件大小（MB）
-	Ext         string  `json:"ext"`          // 文件扩展名
-	Note        string  `json:"note"`         // 备注（如 "1080p60"）
+	FPS         int     `json:"fps"`          // frame rate
+	Codec       string  `json:"codec"`        // video codec
+	AudioCodec  string  `json:"audio_codec"`  // default audio codec
+	FileSizeMB  float64 `json:"file_size_mb"` // file size (MB)
+	Ext         string  `json:"ext"`          // file extension
+	Note        string  `json:"note"`         // note (e.g. "1080p60")
 }
 
-// AudioTrack 单个音频轨道
+// AudioTrack a single audio track
 type AudioTrack struct {
-	FormatID string `json:"format_id"` // yt-dlp 格式 ID，如 "251-0"
-	Language string `json:"language"`  // 语言标签，如 "English"
-	Bitrate  int    `json:"abr"`       // 音频码率 (kbps)
-	Codec    string `json:"codec"`     // 音频编码
-	Note     string `json:"note"`      // 备注
+	FormatID string `json:"format_id"` // yt-dlp format ID, e.g. "251-0"
+	Language string `json:"language"`  // language label, e.g. "English"
+	Bitrate  int    `json:"abr"`       // audio bitrate (kbps)
+	Codec    string `json:"codec"`     // audio codec
+	Note     string `json:"note"`      // note
 }
 
-// VideoInfo 视频完整元信息
+// VideoInfo complete video metadata
 type VideoInfo struct {
 	Title           string        `json:"title"`
 	URL             string        `json:"url"`
@@ -38,7 +38,7 @@ type VideoInfo struct {
 	AudioTracks     []AudioTrack  `json:"audio_tracks"`
 }
 
-// ProgressMsg 下载进度消息（通过 WebSocket 推送）
+// ProgressMsg download progress message (pushed via WebSocket)
 type ProgressMsg struct {
 	Status          string  `json:"status"`           // downloading | merging | finished | error | cancelled | retry
 	Percent         float64 `json:"percent"`
@@ -58,7 +58,7 @@ type ProgressMsg struct {
 	ErrorMessage    string  `json:"error_message,omitempty"`
 }
 
-// DownloadRequest 下载请求参数
+// DownloadRequest download request parameters
 type DownloadRequest struct {
 	URL                string `json:"url"`
 	FormatID           string `json:"format_id"`
@@ -70,4 +70,3 @@ type DownloadRequest struct {
 	Cookies            string `json:"cookies,omitempty"`
 	KeepTempFiles      bool   `json:"keep_temp_files"`
 }
-

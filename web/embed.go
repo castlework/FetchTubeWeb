@@ -1,9 +1,9 @@
-// Package web — 内嵌前端静态资源
+// Package web — embedded frontend static assets
 package web
 
 import "embed"
 
-// Assets 包含所有前端静态文件
+// Assets contains all frontend static files
 //
 //go:embed static/*
 var Assets embed.FS

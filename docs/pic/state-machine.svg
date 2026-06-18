@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="520" viewBox="0 0 800 520">
+<style>
+  .box { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1)); }
+  .title { font-weight: bold; }
+</style>
+<defs>
+
+</defs>
+<rect width="800" height="520" fill="#fafafa"/>
+<circle cx="400" cy="430" r="52" fill="#fff9c4" stroke="#f9a825" stroke-width="2.5"/>
+<text x="400" y="424" font-family="sans-serif" font-size="11" fill="#f9a825" text-anchor="middle" font-weight="bold">Queued</text>
+<text x="400" y="439" font-family="sans-serif" font-size="11" fill="#f9a825" text-anchor="middle" font-weight="bold">排队中</text>
+<circle cx="200" cy="300" r="52" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+<text x="200" y="294" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">Starting</text>
+<text x="200" y="309" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">启动中</text>
+<circle cx="200" cy="140" r="52" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+<text x="200" y="134" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">Downloading</text>
+<text x="200" y="149" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">下载中</text>
+<circle cx="600" cy="140" r="52" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2.5"/>
+<text x="600" y="134" font-family="sans-serif" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold">Merging</text>
+<text x="600" y="149" font-family="sans-serif" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold">合并中</text>
+<circle cx="600" cy="300" r="52" fill="#c8e6c9" stroke="#1b5e20" stroke-width="2.5"/>
+<text x="600" y="294" font-family="sans-serif" font-size="11" fill="#1b5e20" text-anchor="middle" font-weight="bold">Finished ✓</text>
+<text x="600" y="309" font-family="sans-serif" font-size="11" fill="#1b5e20" text-anchor="middle" font-weight="bold">完成</text>
+<circle cx="450" cy="400" r="52" fill="#ffcdd2" stroke="#c62828" stroke-width="2.5"/>
+<text x="450" y="394" font-family="sans-serif" font-size="11" fill="#c62828" text-anchor="middle" font-weight="bold">Error ✗</text>
+<text x="450" y="409" font-family="sans-serif" font-size="11" fill="#c62828" text-anchor="middle" font-weight="bold">失败</text>
+<circle cx="100" cy="400" r="52" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2.5"/>
+<text x="100" y="394" font-family="sans-serif" font-size="11" fill="#7b1fa2" text-anchor="middle" font-weight="bold">Cancelled</text>
+<text x="100" y="409" font-family="sans-serif" font-size="11" fill="#7b1fa2" text-anchor="middle" font-weight="bold">已取消</text>
+<circle cx="400" cy="50" r="52" fill="#ffe0b2" stroke="#e65100" stroke-width="2.5"/>
+<text x="400" y="44" font-family="sans-serif" font-size="11" fill="#e65100" text-anchor="middle" font-weight="bold">Retry</text>
+<text x="400" y="59" font-family="sans-serif" font-size="11" fill="#e65100" text-anchor="middle" font-weight="bold">重试</text>
+<line x1="354.72404471976563" y1="400.5706290678476" x2="245.2759552802344" y2="329.4293709321524" stroke="#555" stroke-width="1.3"/>
+<polygon points="245.2759552802344,329.4293709321524 250.0,338.2 255.2,330.2" fill="#555"/>
+<text x="309.80979031071746" y="349.9080149065885" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">acquire</text>
+<text x="309.80979031071746" y="361.9080149065885" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">semaphore</text>
+<line x1="200.0" y1="246.0" x2="200.0" y2="194.0" stroke="#555" stroke-width="1.3"/>
+<polygon points="200.0,194.0 195.2,202.8 204.8,202.8" fill="#555"/>
+<text x="218.0" y="220.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">yt-dlp</text>
+<text x="218.0" y="232.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">started</text>
+<line x1="254.0" y1="140.0" x2="546.0" y2="140.0" stroke="#555" stroke-width="1.3"/>
+<polygon points="546.0,140.0 537.2,135.2 537.2,144.8" fill="#555"/>
+<text x="400.0" y="158.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">[Merger]</text>
+<text x="400.0" y="170.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">detected</text>
+<line x1="600.0" y1="194.0" x2="600.0" y2="246.0" stroke="#555" stroke-width="1.3"/>
+<polygon points="600.0,246.0 604.8,237.2 595.2,237.2" fill="#555"/>
+<text x="582.0" y="220.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">file size</text>
+<text x="582.0" y="232.0" font-family="sans-serif" font-size="8" fill="#555" text-anchor="middle" font-weight="normal">stable → done</text>
+<line x1="180.61512971732108" y1="190.4006627349652" x2="119.38487028267893" y2="349.59933726503476" stroke="#7b1fa2" stroke-width="1.3"/>
+<polygon points="119.38487028267893,349.59933726503476 127.0,343.1 118.1,339.7" fill="#7b1fa2"/>
+<text x="133.19977908834494" y="263.53837657244037" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">user cancel</text>
+<text x="133.19977908834494" y="275.53837657244037" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">(SIGTERM)</text>
+<line x1="552.0902927333318" y1="164.91304777866742" x2="147.90970726666814" y2="375.0869522213326" stroke="#7b1fa2" stroke-width="1.3"/>
+<polygon points="147.90970726666814,375.0869522213326 157.9,375.3 153.5,366.8" fill="#7b1fa2"/>
+<text x="341.6956507404442" y="254.0300975777773" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">user cancel</text>
+<text x="341.6956507404442" y="266.03009757777727" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">(SIGTERM)</text>
+<line x1="161.81623381592644" y1="338.18376618407353" x2="138.18376618407356" y2="361.81623381592647" stroke="#7b1fa2" stroke-width="1.3"/>
+<polygon points="138.18376618407356,361.81623381592647 147.8,359.0 141.0,352.2" fill="#7b1fa2"/>
+<text x="137.27207793864216" y="337.27207793864216" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">user cancel</text>
+<text x="137.27207793864216" y="349.27207793864216" font-family="sans-serif" font-size="8" fill="#7b1fa2" text-anchor="middle" font-weight="normal">(SIGTERM)</text>
+<line x1="237.42787067759636" y1="178.92498550470023" x2="412.5721293224036" y2="361.0750144952998" stroke="#c62828" stroke-width="1.3"/>
+<polygon points="412.5721293224036,361.0750144952998 409.9,351.4 403.0,358.1" fill="#c62828"/>
+<text x="312.0250048317666" y="282.4759568925321" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">yt-dlp</text>
+<text x="312.0250048317666" y="294.4759568925321" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">crashed</text>
+<line x1="573.0149875115628" y1="186.77402164662442" x2="476.9850124884372" y2="353.2259783533756" stroke="#c62828" stroke-width="1.3"/>
+<polygon points="476.9850124884372,353.2259783533756 485.5,348.0 477.2,343.2" fill="#c62828"/>
+<text x="509.4086594511252" y="261.0049958371876" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">ffmpeg</text>
+<text x="509.4086594511252" y="273.0049958371876" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">failed</text>
+<line x1="550.7562387205443" y1="117.84030742424491" x2="449.2437612794557" y2="72.15969257575509" stroke="#e65100" stroke-width="1.3"/>
+<polygon points="449.2437612794557,72.15969257575509 455.3,80.1 459.2,71.4" fill="#e65100"/>
+<text x="507.38656419191835" y="78.58541290684809" font-family="sans-serif" font-size="8" fill="#e65100" text-anchor="middle" font-weight="normal">merge</text>
+<text x="507.38656419191835" y="90.58541290684809" font-family="sans-serif" font-size="8" fill="#e65100" text-anchor="middle" font-weight="normal">timeout</text>
+<line x1="350.7562387205443" y1="72.15969257575509" x2="249.24376127945575" y2="117.84030742424491" stroke="#e65100" stroke-width="1.3"/>
+<polygon points="249.24376127945575,117.84030742424491 259.2,118.6 255.3,109.9" fill="#e65100"/>
+<text x="292.61343580808165" y="78.58541290684809" font-family="sans-serif" font-size="8" fill="#e65100" text-anchor="middle" font-weight="normal">re-download</text>
+<text x="292.61343580808165" y="90.58541290684809" font-family="sans-serif" font-size="8" fill="#e65100" text-anchor="middle" font-weight="normal">(≤2 retries)</text>
+<line x1="407.63675323681474" y1="103.45727265770299" x2="442.36324676318526" y2="346.542727342297" stroke="#c62828" stroke-width="1.3"/>
+<polygon points="442.36324676318526,346.542727342297 445.9,337.2 436.4,338.5" fill="#c62828"/>
+<text x="407.180909114099" y="227.54558441227158" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">retries</text>
+<text x="407.180909114099" y="239.54558441227158" font-family="sans-serif" font-size="8" fill="#c62828" text-anchor="middle" font-weight="normal">exhausted</text>
+<line x1="400" y1="510" x2="400" y2="482" stroke="#333" stroke-width="1.5"/>
+<polygon points="400,482 395.2,490.8 404.8,490.8" fill="#333"/>
+<text x="410" y="500" font-family="sans-serif" font-size="8" fill="#555" text-anchor="start" font-weight="normal">POST</text>
+<text x="410" y="512" font-family="sans-serif" font-size="8" fill="#555" text-anchor="start" font-weight="normal">/api/download</text>
+<text x="400" y="25" font-family="sans-serif" font-size="16" fill="#333" text-anchor="middle" font-weight="bold">Download Task State Machine</text>
+<text x="400" y="45" font-family="sans-serif" font-size="11" fill="#888" text-anchor="middle" font-weight="normal">One task flows through these states in a goroutine</text>
+</svg>

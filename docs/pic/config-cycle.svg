@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="420" viewBox="0 0 750 420">
+<style>
+  .box { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1)); }
+  .title { font-weight: bold; }
+</style>
+<defs>
+
+</defs>
+<rect width="750" height="420" fill="#fafafa"/>
+<text x="375" y="30" font-family="sans-serif" font-size="16" fill="#333" text-anchor="middle" font-weight="bold">Configuration Lifecycle</text>
+<rect x="75" y="70" width="150" height="55" rx="6" fill="#fff" stroke="#1565c0" stroke-width="2" class=""/>
+<text x="150" y="92" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">App Start</text>
+<text x="150" y="107" font-family="sans-serif" font-size="11" fill="#1565c0" text-anchor="middle" font-weight="bold">main.go</text>
+<rect x="325" y="70" width="150" height="55" rx="6" fill="#fff" stroke="#2e7d32" stroke-width="2" class=""/>
+<text x="400" y="92" font-family="sans-serif" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold">config.Load()</text>
+<text x="400" y="107" font-family="sans-serif" font-size="11" fill="#2e7d32" text-anchor="middle" font-weight="bold">Read JSON file</text>
+<rect x="575" y="70" width="150" height="55" rx="6" fill="#fff" stroke="#e65100" stroke-width="2" class=""/>
+<text x="650" y="92" font-family="sans-serif" font-size="11" fill="#e65100" text-anchor="middle" font-weight="bold">Merge with</text>
+<text x="650" y="107" font-family="sans-serif" font-size="11" fill="#e65100" text-anchor="middle" font-weight="bold">Defaults</text>
+<rect x="575" y="200" width="150" height="55" rx="6" fill="#fff" stroke="#7b1fa2" stroke-width="2" class=""/>
+<text x="650" y="222" font-family="sans-serif" font-size="11" fill="#7b1fa2" text-anchor="middle" font-weight="bold">Server holds</text>
+<text x="650" y="237" font-family="sans-serif" font-size="11" fill="#7b1fa2" text-anchor="middle" font-weight="bold">cfg in memory</text>
+<rect x="325" y="320" width="150" height="55" rx="6" fill="#fff" stroke="#c62828" stroke-width="2" class=""/>
+<text x="400" y="342" font-family="sans-serif" font-size="11" fill="#c62828" text-anchor="middle" font-weight="bold">PUT /api/config</text>
+<text x="400" y="357" font-family="sans-serif" font-size="11" fill="#c62828" text-anchor="middle" font-weight="bold">Save to disk</text>
+<rect x="75" y="320" width="150" height="55" rx="6" fill="#fff" stroke="#f9a825" stroke-width="2" class=""/>
+<text x="150" y="342" font-family="sans-serif" font-size="11" fill="#f9a825" text-anchor="middle" font-weight="bold">Browser</text>
+<text x="150" y="357" font-family="sans-serif" font-size="11" fill="#f9a825" text-anchor="middle" font-weight="bold">loads config</text>
+<line x1="225" y1="110" x2="310" y2="110" stroke="#555" stroke-width="1.5"/>
+<polygon points="310,110 301.2,105.2 301.2,114.8" fill="#555"/>
+<line x1="475" y1="110" x2="560" y2="110" stroke="#555" stroke-width="1.5"/>
+<polygon points="560,110 551.2,105.2 551.2,114.8" fill="#555"/>
+<line x1="650" y1="125" x2="650" y2="185" stroke="#555" stroke-width="1.5"/>
+<polygon points="650,185 654.8,176.2 645.2,176.2" fill="#555"/>
+<line x1="560" y1="235" x2="490" y2="235" stroke="#555" stroke-width="1.5"/>
+<polygon points="490,235 498.8,239.8 498.8,230.2" fill="#555"/>
+<polyline points="650,255 650,280 475,280 475,290" fill="none" stroke="#455a64" stroke-width="1.5"/>
+<line x1="400" y1="290" x2="400" y2="305" stroke="#555" stroke-width="1.5"/>
+<polygon points="400,305 404.8,296.2 395.2,296.2" fill="#555"/>
+<line x1="310" y1="347" x2="240" y2="347" stroke="#555" stroke-width="1.5"/>
+<polygon points="240,347 248.8,351.8 248.8,342.2" fill="#555"/>
+<line x1="75" y1="347" x2="75" y2="290" stroke="#555" stroke-width="1.5"/>
+<polygon points="75,290 70.2,298.8 79.8,298.8" fill="#555"/>
+<polyline points="75,347 75,115 110,115" fill="none" stroke="#455a64" stroke-width="1.3" stroke-dasharray="6,4"/>
+<text x="268" y="102" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle" font-weight="normal">defaults if</text>
+<text x="268" y="115" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle" font-weight="normal">file missing</text>
+<text x="518" y="102" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle" font-weight="normal">saved fields</text>
+<text x="518" y="115" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle" font-weight="normal">override defaults</text>
+<text x="660" y="155" font-family="sans-serif" font-size="9" fill="#888" text-anchor="start" font-weight="normal">mu.Lock()</text>
+<text x="660" y="168" font-family="sans-serif" font-size="9" fill="#888" text-anchor="start" font-weight="normal">thread-safe</text>
+<text x="560" y="225" font-family="sans-serif" font-size="9" fill="#888" text-anchor="start" font-weight="normal">auto-save on</text>
+<text x="560" y="238" font-family="sans-serif" font-size="9" fill="#888" text-anchor="start" font-weight="normal">search &amp; download</text>
+<text x="310" y="355" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle" font-weight="normal">GET /api/config</text>
+<text x="130" y="395" font-family="sans-serif" font-size="10" fill="#999" text-anchor="start" font-weight="normal">Config file: ~/.FetchTubeWeb_config.json  (JSON format, human-readable)</text>
+</svg>

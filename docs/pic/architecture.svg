@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<style>
+  .box { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1)); }
+  .title { font-weight: bold; }
+</style>
+<defs>
+
+</defs>
+<rect width="900" height="620" fill="#fafafa"/>
+<rect x="30" y="30" width="200" height="120" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="2" class=""/>
+<text x="130.0" y="48" font-family="sans-serif" font-size="14" fill="#1565c0" text-anchor="middle" font-weight="bold">🌐 Browser (Web UI)</text>
+<rect x="50" y="65" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="130.0" y="81.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">HTML + CSS (static/index.html)</text>
+<rect x="50" y="95" width="80" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="90.0" y="111.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">app.js (logic)</text>
+<rect x="140" y="95" width="70" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="175.0" y="111.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">ws.js (WS)</text>
+<rect x="290" y="30" width="320" height="540" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" class=""/>
+<text x="450.0" y="48" font-family="sans-serif" font-size="14" fill="#2e7d32" text-anchor="middle" font-weight="bold">⚙️ Go HTTP Server</text>
+<rect x="310" y="65" width="280" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="450.0" y="94.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="330" y="82" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">HTTP Handlers</text>
+<text x="330" y="100" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">info / download / tasks / browse / config / thumbnail</text>
+<rect x="310" y="125" width="135" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="377.5" y="154.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="330" y="142" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">WebSocket Hub</text>
+<text x="330" y="160" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">broadcast progress</text>
+<rect x="455" y="125" width="135" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="522.5" y="154.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="475" y="142" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Task Manager</text>
+<text x="475" y="160" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">queue / cancel</text>
+<rect x="310" y="185" width="280" height="35" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="450.0" y="206.5" font-family="sans-serif" font-size="10" fill="#555" text-anchor="middle" font-weight="normal">Config Manager  (load / save / merge JSON)</text>
+<rect x="310" y="230" width="280" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="450.0" y="259.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="330" y="247" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">yt-dlp Wrapper</text>
+<text x="330" y="265" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">FetchInfo / BuildDownloadArgs / KillProcessTree</text>
+<rect x="310" y="290" width="280" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="450.0" y="319.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="330" y="307" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Download Manager</text>
+<text x="330" y="325" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">run download / parse progress / merge timeout detect</text>
+<rect x="310" y="350" width="280" height="50" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="450.0" y="379.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="330" y="367" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Progress Parser</text>
+<text x="330" y="385" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">parseProgressLine / scanProgressLines / printConsole</text>
+<rect x="310" y="410" width="135" height="55" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="377.5" y="441.5" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="325" y="428" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Data Models</text>
+<text x="325" y="445" font-family="sans-serif" font-size="8" fill="#666" text-anchor="start" font-weight="normal">VideoInfo / FormatOption</text>
+<text x="325" y="457" font-family="sans-serif" font-size="8" fill="#666" text-anchor="start" font-weight="normal">ProgressData / AudioTrack</text>
+<rect x="455" y="410" width="135" height="55" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="522.5" y="441.5" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal"></text>
+<text x="475" y="428" font-family="sans-serif" font-size="12" fill="#2e7d32" text-anchor="start" font-weight="bold">Embedded Web</text>
+<text x="475" y="445" font-family="sans-serif" font-size="8" fill="#666" text-anchor="start" font-weight="normal">//go:embed static/*</text>
+<text x="475" y="457" font-family="sans-serif" font-size="8" fill="#666" text-anchor="start" font-weight="normal">embed.FS</text>
+<rect x="670" y="30" width="200" height="140" rx="6" fill="#fff3e0" stroke="#e65100" stroke-width="2" class=""/>
+<text x="770.0" y="48" font-family="sans-serif" font-size="14" fill="#e65100" text-anchor="middle" font-weight="bold">🔧 External Tools</text>
+<rect x="690" y="65" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="81.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">yt-dlp.exe (video download)</text>
+<rect x="690" y="95" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="111.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">ffmpeg.exe (audio/video merge)</text>
+<rect x="690" y="125" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="141.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">node.exe (JS runtime)</text>
+<rect x="670" y="200" width="200" height="50" rx="6" fill="#fff3e0" stroke="#e65100" stroke-width="2" class=""/>
+<text x="770.0" y="218" font-family="sans-serif" font-size="14" fill="#e65100" text-anchor="middle" font-weight="bold">☁️ YouTube Servers</text>
+<rect x="670" y="280" width="200" height="120" rx="6" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2" class=""/>
+<text x="770.0" y="298" font-family="sans-serif" font-size="14" fill="#7b1fa2" text-anchor="middle" font-weight="bold">💾 Local Storage</text>
+<rect x="690" y="315" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="331.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">Config JSON (~/.FetchTubeWeb)</text>
+<rect x="690" y="345" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="361.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">Download directory</text>
+<rect x="690" y="375" width="160" height="24" rx="3" fill="#fff" stroke="#ccc" stroke-width="1" class=""/>
+<text x="770.0" y="391.0" font-family="sans-serif" font-size="11" fill="#555" text-anchor="middle" font-weight="normal">Browser localStorage</text>
+<line x1="230" y1="80" x2="290" y2="80" stroke="#555" stroke-width="1.5"/>
+<polygon points="290,80 281.2,75.2 281.2,84.8" fill="#555"/>
+<text x="260" y="72" font-family="sans-serif" font-size="10" fill="#666" text-anchor="middle" font-weight="normal">HTTP</text>
+<line x1="230" y1="140" x2="290" y2="140" stroke="#555" stroke-width="1.5"/>
+<polygon points="290,140 281.2,135.2 281.2,144.8" fill="#555"/>
+<text x="260" y="132" font-family="sans-serif" font-size="10" fill="#666" text-anchor="middle" font-weight="normal">WS</text>
+<line x1="610" y1="90" x2="670" y2="90" stroke="#555" stroke-width="1.5"/>
+<polygon points="670,90 661.2,85.2 661.2,94.8" fill="#555"/>
+<text x="640" y="82" font-family="sans-serif" font-size="10" fill="#666" text-anchor="middle" font-weight="normal">exec</text>
+<line x1="610" y1="225" x2="670" y2="225" stroke="#555" stroke-width="1.5"/>
+<polygon points="670,225 661.2,220.2 661.2,229.8" fill="#555"/>
+<text x="640" y="217" font-family="sans-serif" font-size="10" fill="#666" text-anchor="middle" font-weight="normal">HTTP</text>
+<line x1="610" y1="340" x2="670" y2="340" stroke="#555" stroke-width="1.5"/>
+<polygon points="670,340 661.2,335.2 661.2,344.8" fill="#555"/>
+<text x="640" y="332" font-family="sans-serif" font-size="10" fill="#666" text-anchor="middle" font-weight="normal">R/W</text>
+<line x1="770" y1="170" x2="770" y2="200" stroke="#555" stroke-width="1.5"/>
+<polygon points="770,200 774.8,191.2 765.2,191.2" fill="#555"/>
+<text x="780" y="188" font-family="sans-serif" font-size="9" fill="#666" text-anchor="start" font-weight="normal">API</text>
+<text x="30" y="180" font-family="sans-serif" font-size="11" fill="#333" text-anchor="start" font-weight="bold">Data Flow:</text>
+<line x1="30" y1="200" x2="80" y2="200" stroke="#555" stroke-width="1.5"/>
+<polygon points="80,200 71.2,195.2 71.2,204.8" fill="#555"/>
+<text x="85" y="204" font-family="sans-serif" font-size="10" fill="#555" text-anchor="start" font-weight="normal">Request / Response / Event</text>
+</svg>

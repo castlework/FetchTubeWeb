@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube 视频下载器</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polygon points="10,8 16,12 10,16"/></svg>
+    <span>YouTube 下载器</span>
+  </div>
+  <div class="topbar-status" id="serverStatus">服务运行中</div>
+</div>
+
+<!-- Tab Bar -->
+<div class="tabbar">
+  <button class="tab-btn active" data-tab="local">本地下载</button>
+  <button class="tab-btn" data-tab="remote">远程下载 (VPS)</button>
+</div>
+
+<!-- ==================== Tab: 本地下载 ==================== -->
+<div class="tab-content active" id="tab-local">
+  <div class="layout">
+
+    <!-- Left Panel: Controls -->
+    <div class="layout-panel layout-left">
+
+      <!-- URL Input -->
+      <div class="card">
+        <div class="card-title">视频链接</div>
+        <div class="input-row">
+          <input type="text" id="l-url" class="input" placeholder="粘贴 YouTube 链接...">
+          <button id="l-search-btn" class="btn btn-primary" onclick="searchLocal()">搜索</button>
+        </div>
+      </div>
+
+      <!-- Video Info -->
+      <div class="card" id="l-info-card" style="display:none">
+        <div class="card-title">视频信息</div>
+        <div class="video-info-grid">
+          <img id="l-thumbnail" class="video-thumb" src="" alt="缩略图">
+          <div>
+            <h2 id="l-title" class="video-title"></h2>
+            <p id="l-meta" class="video-meta"></p>
+            <p id="l-desc" class="video-desc"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format Selection -->
+      <div class="card" id="l-format-card" style="display:none">
+        <div class="card-title">选择分辨率</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>分辨率</th><th>视频编码</th><th>音频编码</th><th>大小</th><th>扩展名</th></tr></thead>
+            <tbody id="l-format-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Audio Track Selection -->
+      <div class="card" id="l-audio-card" style="display:none">
+        <div class="card-title">音轨选择（可多选）</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th></th><th>语言</th><th>编码</th><th>码率</th><th>备注</th></tr></thead>
+            <tbody id="l-audio-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card">
+        <div class="settings-row">
+          <div class="setting-group">
+            <label class="input-label">输出格式</label>
+            <select id="l-fmt" class="select">
+              <option value="mkv">MKV</option>
+              <option value="mp4">MP4</option>
+              <option value="webm">WebM</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="input-label">并发分片</label>
+            <select id="l-frag" class="select">
+              <option value="1">1</option><option value="2">2</option><option value="4">4</option>
+              <option value="6">6</option><option value="8" selected>8</option>
+              <option value="12">12</option><option value="16">16</option>
+              <option value="24">24</option><option value="32">32</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="input-label">保存目录</label>
+            <div class="input-row">
+              <input type="text" id="l-save-dir" class="input" placeholder="选择保存目录...">
+              <button class="btn btn-secondary" onclick="browseFolder('l-save-dir')">浏览</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="setting-group">
+            <label class="input-label">代理模式</label>
+            <select id="l-proxy-mode" class="select" onchange="toggleProxy()">
+              <option value="无">无</option>
+              <option value="HTTP">HTTP</option>
+              <option value="SOCKS5">SOCKS5</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label class="input-label">代理地址</label>
+            <input type="text" id="l-proxy-host" class="input" value="127.0.0.1" disabled>
+          </div>
+          <div class="setting-group">
+            <label class="input-label">代理端口</label>
+            <input type="text" id="l-proxy-port" class="input" value="1080" disabled>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="setting-group">
+            <label class="input-label">Cookies 来源</label>
+            <select id="l-cookies" class="select" onchange="toggleCookies()">
+              <option value="无">无</option>
+              <option value="Firefox">Firefox</option>
+              <option value="Chrome">Chrome</option>
+              <option value="Edge">Edge</option>
+              <option value="Brave">Brave</option>
+              <option value="Opera">Opera</option>
+              <option value="文件">文件...</option>
+            </select>
+          </div>
+          <div class="setting-group" id="l-cookies-file-group" style="display:none">
+            <label class="input-label">Cookies 文件路径</label>
+            <div class="input-row">
+              <input type="text" id="l-cookies-path" class="input" placeholder="选择 cookies.txt...">
+              <button class="btn btn-secondary" onclick="browseFile()">浏览</button>
+            </div>
+          </div>
+          <div class="setting-group" id="l-cookies-hint-group">
+            <span class="hint" id="l-cookies-hint"></span>
+          </div>
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="l-keep-temp"> 保留中间文件
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Download Button -->
+      <button id="l-dl-btn" class="btn btn-primary btn-lg btn-block" onclick="startDownload()">
+        加入下载队列
+      </button>
+    </div>
+
+    <!-- Right Panel: Queue -->
+    <div class="layout-panel layout-right" id="l-queue-sidebar">
+      <div class="batch-toolbar" id="l-batch-toolbar" style="display:none">
+        <label class="batch-select-all">
+          <input type="checkbox" id="l-select-all" onchange="toggleSelectAll(this.checked)" title="全选已完成任务">
+          <span id="l-batch-count">共 0 个已完成</span>
+        </label>
+        <button class="btn btn-danger btn-sm" onclick="batchDeleteTasks()">🗑 批量删除</button>
+      </div>
+      <div id="l-queue-empty" class="empty-state">
+        <div class="empty-state-icon">📥</div>
+        <div class="empty-state-text">下载队列为空<br>搜索视频并选择格式后开始下载</div>
+      </div>
+      <div id="l-queue-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Tab: 远程下载 (VPS) ==================== -->
+<div class="tab-content" id="tab-remote">
+  <div class="layout" style="grid-template-columns: 1fr;">
+
+    <div class="layout-panel" style="max-width: 700px; margin: 0 auto;">
+
+      <!-- Server Config -->
+      <div class="card">
+        <div class="card-title">服务器配置</div>
+        <div class="settings-row">
+          <div class="setting-group">
+            <label class="input-label">服务器地址</label>
+            <input type="text" id="r-host" class="input" placeholder="VPS IP 或域名">
+          </div>
+          <div class="setting-group">
+            <label class="input-label">端口</label>
+            <input type="text" id="r-port" class="input" value="8899">
+          </div>
+          <div class="setting-group" style="align-self: flex-end">
+            <button id="r-test-btn" class="btn btn-secondary" onclick="testRelay()">测试连接</button>
+            <span class="conn-status" id="r-conn-status">未连接</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- URL + Search -->
+      <div class="card">
+        <div class="card-title">视频链接</div>
+        <div class="input-row">
+          <input type="text" id="r-url" class="input" placeholder="粘贴 YouTube 链接...">
+          <button id="r-search-btn" class="btn btn-primary" onclick="searchRemote()">搜索</button>
+        </div>
+      </div>
+
+      <!-- Remote Video Info -->
+      <div class="card" id="r-info-card" style="display:none">
+        <div class="card-title">视频信息</div>
+        <div class="video-info-grid">
+          <img id="r-thumbnail" class="video-thumb" src="" alt="缩略图">
+          <div>
+            <h2 id="r-title" class="video-title"></h2>
+            <p id="r-meta" class="video-meta"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remote Format Selection -->
+      <div class="card" id="r-format-card" style="display:none">
+        <div class="card-title">选择分辨率</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>分辨率</th><th>视频编码</th><th>音频编码</th><th>大小</th><th>扩展名</th></tr></thead>
+            <tbody id="r-format-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Remote Audio Tracks -->
+      <div class="card" id="r-audio-card" style="display:none">
+        <div class="card-title">音轨选择</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th></th><th>语言</th><th>编码</th><th>码率</th><th>备注</th></tr></thead>
+            <tbody id="r-audio-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Remote Submit -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <select id="r-fmt" class="select" style="flex:1">
+          <option value="mp4">MP4</option>
+          <option value="webm">WebM</option>
+          <option value="mkv">MKV</option>
+        </select>
+        <button id="r-submit-btn" class="btn btn-primary btn-lg" onclick="submitRemote()">
+          下发到 VPS 下载
+        </button>
+      </div>
+
+      <!-- Remote Task List -->
+      <div class="card">
+        <div class="card-title">远程任务</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>任务ID</th><th>标题</th><th>分辨率</th><th>状态</th><th>进度</th></tr></thead>
+            <tbody id="r-task-body">
+              <tr><td colspan="5" class="empty-row">暂无任务</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Remote File List -->
+      <div class="card">
+        <div class="card-title">VPS 暂存文件</div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>文件名</th><th>大小(MB)</th><th>日期</th><th>操作</th></tr></thead>
+            <tbody id="r-file-body">
+              <tr><td colspan="4" class="empty-row">暂无文件</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="refreshRemote()">刷新</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Folder Browser Modal -->
+<div class="modal-overlay" id="folder-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>选择目录</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="folder-list"></div>
+    <div class="modal-footer">
+      <span class="current-path" id="current-path"></span>
+      <button class="btn btn-primary btn-sm" onclick="confirmFolder()">选择此目录</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Browser Modal -->
+<div class="modal-overlay" id="file-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>选择文件</span>
+      <button class="modal-close" onclick="closeFileModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="file-list"></div>
+    <div class="modal-footer">
+      <span class="current-path" id="file-current-path"></span>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/api.js"></script>
+<script src="/static/js/ws.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

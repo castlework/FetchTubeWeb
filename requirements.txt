@@ -1,0 +1,11 @@
+# YouTube 视频下载器 — Python 依赖
+# 本项目是 Go 应用，但底层调用 yt-dlp 作为视频下载引擎。
+# 开发时可通过 pip 安装 yt-dlp 替代 standalone exe（更轻量，需要 Python 运行时）。
+#
+# 安装方式：
+#   pip install -r requirements.txt
+#
+# 生产分发请使用 standalone yt-dlp.exe（自包含 Python，用户无需安装）：
+#   https://github.com/yt-dlp/yt-dlp/releases
+
+yt-dlp>=2024.1.1

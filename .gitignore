@@ -1,0 +1,23 @@
+# ── Go ──
+youtube-downloader.exe
+*.exe
+*.test
+*.out
+dist/
+
+# Go temporary / logs
+stdout.log
+stderr.log
+
+# ── IDE / Tools ──
+.vscode/
+.idea/
+.claude/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── Project ──
+downloads/
+*cookies*.txt

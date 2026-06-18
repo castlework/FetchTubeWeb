@@ -58,9 +58,17 @@ jobs:
       - name: Download ffmpeg.exe (BtbN static build, no DLL deps)
         shell: pwsh
         run: |
-          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/latest/download/ffmpeg-master-latest-win64-gpl.zip"
-          Write-Host "Downloading ffmpeg (static build)..."
-          Invoke-WebRequest -Uri $url -OutFile ffmpeg.zip -UseBasicParsing
+          Write-Host "Fetching latest ffmpeg release info from GitHub API..."
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest" `
+            -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" }
+          $asset = $release.assets | Where-Object { $_.name -like "*win64*gpl*" } | Select-Object -First 1
+          if (-not $asset) {
+            Write-Host "ERROR: Could not find ffmpeg asset in latest release"
+            Write-Host "Available assets: $($release.assets.name -join ', ')"
+            exit 1
+          }
+          Write-Host "Downloading: $($asset.name) ($([math]::Round($asset.size / 1MB, 1)) MB)"
+          Invoke-WebRequest -Uri $asset.browser_download_url -OutFile ffmpeg.zip -UseBasicParsing
           Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_extract -Force
           $ffmpegExe = Get-ChildItem -Path ffmpeg_extract -Filter ffmpeg.exe -Recurse | Select-Object -First 1
           Copy-Item $ffmpegExe.FullName ffmpeg.exe

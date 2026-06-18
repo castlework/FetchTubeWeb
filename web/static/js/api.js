@@ -115,28 +115,4 @@ const API = {
     return this.get('/api/drives');
   },
 
-  // Relay
-  relayTest(host, port) {
-    return this.post('/api/relay/test', { host, port });
-  },
-
-  relaySubmit(host, port, url, formatId, outputExt) {
-    return this.post('/api/relay/submit', { host, port, url, format_id: formatId, output_ext: outputExt });
-  },
-
-  relayTasks(host, port) {
-    return this.get('/api/relay/tasks', { host, port });
-  },
-
-  relayFiles(host, port) {
-    return this.get('/api/relay/files', { host, port });
-  },
-
-  relayDownload(host, port, filename, saveDir) {
-    return this.post('/api/relay/download', { host, port, filename, save_dir: saveDir });
-  },
-
-  relayDeleteFile(host, port, filename) {
-    return this.del('/api/relay/file', { host, port, filename });
-  },
 };

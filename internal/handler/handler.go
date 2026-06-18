@@ -54,14 +54,6 @@ func (s *Server) SetupRoutes(mux *http.ServeMux) {
 	// WebSocket
 	mux.HandleFunc("GET /ws/progress", s.handleWebSocket)
 
-	// 远程中继
-	mux.HandleFunc("POST /api/relay/test", s.handleRelayTest)
-	mux.HandleFunc("POST /api/relay/submit", s.handleRelaySubmit)
-	mux.HandleFunc("GET /api/relay/tasks", s.handleRelayTasks)
-	mux.HandleFunc("GET /api/relay/files", s.handleRelayFiles)
-	mux.HandleFunc("POST /api/relay/download", s.handleRelayDownload)
-	mux.HandleFunc("DELETE /api/relay/file", s.handleRelayDeleteFile)
-
 	log.Println("[server] 路由已注册")
 }
 

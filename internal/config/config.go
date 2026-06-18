@@ -10,8 +10,7 @@ import (
 
 // AppConfig 应用配置
 type AppConfig struct {
-	Local  LocalConfig  `json:"local"`
-	Remote RemoteConfig `json:"remote"`
+	Local LocalConfig `json:"local"`
 }
 
 // LocalConfig 本地下载配置
@@ -28,11 +27,6 @@ type LocalConfig struct {
 	KeepTempFiles       bool   `json:"keep_temp_files"`
 }
 
-// RemoteConfig 远程 VPS 配置
-type RemoteConfig struct {
-	Host string `json:"host"`
-	Port string `json:"port"`
-}
 
 // DefaultConfig 返回默认配置
 func DefaultConfig() AppConfig {
@@ -47,10 +41,6 @@ func DefaultConfig() AppConfig {
 			CookiesPath:         "",
 			SaveDir:             "",
 			KeepTempFiles:       false,
-		},
-		Remote: RemoteConfig{
-			Host: "",
-			Port: "8899",
 		},
 	}
 }
@@ -134,11 +124,5 @@ func merge(dst *AppConfig, saved *AppConfig) {
 	// bool 字段特殊处理：仅当 saved 中为 true 才覆盖
 	if saved.Local.KeepTempFiles {
 		dst.Local.KeepTempFiles = true
-	}
-	if saved.Remote.Host != "" {
-		dst.Remote.Host = saved.Remote.Host
-	}
-	if saved.Remote.Port != "" {
-		dst.Remote.Port = saved.Remote.Port
 	}
 }

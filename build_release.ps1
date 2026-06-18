@@ -1,11 +1,11 @@
 # FetchTubeWeb Release Build Script
 # Usage: .\build_release.ps1
-# Output: .\dist\
+# Output: .\release_exe\
 
 $ErrorActionPreference = "Stop"
 $goDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $goDir
-$releaseDir = Join-Path $goDir "dist"
+$releaseDir = Join-Path $goDir "release_exe"
 
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  FetchTubeWeb Release Build" -ForegroundColor Cyan

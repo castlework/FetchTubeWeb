@@ -71,28 +71,3 @@ type DownloadRequest struct {
 	KeepTempFiles      bool   `json:"keep_temp_files"`
 }
 
-// RemoteTask VPS 上的下载任务
-type RemoteTask struct {
-	TaskID          string  `json:"task_id"`
-	URL             string  `json:"url"`
-	Title           string  `json:"title"`
-	FormatNote      string  `json:"format_note"`
-	OutputExt       string  `json:"output_ext"`
-	Status          string  `json:"status"`
-	Percent         float64 `json:"percent"`
-	SpeedMBps       float64 `json:"speed_mbps"`
-	DownloadedMB    float64 `json:"downloaded_mb"`
-	TotalMB         float64 `json:"total_mb"`
-	ETASeconds      int     `json:"eta_seconds"`
-	ElapsedSeconds  int     `json:"elapsed_seconds"`
-	ErrorMessage    string  `json:"error_message"`
-	Filename        string  `json:"filename"`
-	CreatedAt       string  `json:"created_at"`
-}
-
-// RemoteFile VPS 暂存文件
-type RemoteFile struct {
-	Filename  string  `json:"filename"`
-	SizeMB    float64 `json:"size_mb"`
-	CreatedAt string  `json:"created_at"`
-}

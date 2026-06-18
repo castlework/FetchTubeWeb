@@ -3,11 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 
 	"FetchTubeWeb/internal/ytdlp"
 )
@@ -255,6 +258,51 @@ func (s *Server) handlePickFolder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, 200, map[string]string{"path": path})
+}
+
+// handleThumbnail 代理获取缩略图（解决浏览器无法直连 i.ytimg.com 的问题）
+// GET /api/thumbnail?url=...&proxy=...
+func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
+	imgURL := r.URL.Query().Get("url")
+	if imgURL == "" {
+		writeError(w, 400, "缺少 url 参数")
+		return
+	}
+
+	proxyStr := r.URL.Query().Get("proxy")
+
+	var client *http.Client
+	if proxyStr != "" {
+		proxyURL, err := url.Parse(proxyStr)
+		if err != nil {
+			writeError(w, 400, "无效的代理地址: "+err.Error())
+			return
+		}
+		transport := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+		client = &http.Client{Transport: transport, Timeout: 30 * time.Second}
+	} else {
+		client = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	resp, err := client.Get(imgURL)
+	if err != nil {
+		writeError(w, 502, "获取缩略图失败: "+err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		writeError(w, 502, fmt.Sprintf("获取缩略图失败: HTTP %d", resp.StatusCode))
+		return
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "image/jpeg"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	io.Copy(w, resp.Body)
 }
 
 func pickFolderWindows() (path string, cancelled bool, err error) {

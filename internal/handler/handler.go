@@ -50,6 +50,7 @@ func (s *Server) SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/health", s.handleHealth)
 	mux.HandleFunc("GET /api/browse", s.handleBrowse)
 	mux.HandleFunc("GET /api/drives", s.handleDrives)
+	mux.HandleFunc("GET /api/thumbnail", s.handleThumbnail)
 
 	// WebSocket
 	mux.HandleFunc("GET /ws/progress", s.handleWebSocket)

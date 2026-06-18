@@ -163,7 +163,8 @@ function renderLocalInfo(info) {
   document.getElementById('l-desc').textContent = info.description || '';
   if (info.thumbnail_url) {
     const thumb = document.getElementById('l-thumbnail');
-    thumb.src = info.thumbnail_url;
+    const proxy = buildProxy();
+    thumb.src = '/api/thumbnail?url=' + encodeURIComponent(info.thumbnail_url) + (proxy ? '&proxy=' + encodeURIComponent(proxy) : '');
     thumb.style.display = '';
   }
 }

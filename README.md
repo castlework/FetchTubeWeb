@@ -100,7 +100,7 @@ FetchTubeWeb/
 │       └── release.yml          # GitHub Actions 自动构建发布
 ├── internal/
 │   ├── config/
-│   │   └── config.go            # JSON 配置持久化（~/.youtube_downloader_config.json）
+│   │   └── config.go            # JSON 配置持久化（~/.FetchTubeWeb_config.json）
 │   ├── handler/
 │   │   ├── handler.go           # Server 结构体 + 路由注册
 │   │   ├── download.go          # 下载/任务/健康检查/目录浏览 API
@@ -183,7 +183,7 @@ make run
 
 # 4. 开发构建（快速）
 make build
-# 输出： youtube-downloader.exe
+# 输出： FetchTubeWeb.exe
 ```
 
 启动后终端打印 banner，浏览器自动打开 `http://localhost:8899`。
@@ -204,7 +204,7 @@ go build -o app.exe . && ./app.exe -port 8080
 ```bash
 # 生产构建（压缩二进制 + 版本注入）
 make release
-# 输出： dist/youtube-downloader.exe
+# 输出： dist/FetchTubeWeb.exe
 
 # 查看构建说明
 make dist
@@ -223,24 +223,24 @@ make dist
 
 | 步骤 | 操作 | 说明 |
 |:----:|------|------|
-| 1/4 | `go build -ldflags="-s -w" -o youtube-downloader.exe` | 编译压缩版 Go 二进制 |
+| 1/4 | `go build -ldflags="-s -w" -o FetchTubeWeb.exe` | 编译压缩版 Go 二进制 |
 | 2/4 | 创建 `dist/` 目录 | 清空旧目录后重建 |
-| 3/4 | 复制 `youtube-downloader.exe` 到 `dist/` | |
+| 3/4 | 复制 `FetchTubeWeb.exe` 到 `dist/` | |
 | 4/4 | 搜索并复制外部依赖 | 按 "同目录 → PATH" 顺序查找 `yt-dlp.exe`、`ffmpeg.exe`、`node.exe` |
 
 **输出示例：**
 
 ```
 ========================================
-  youtube-downloader Release Build
+  FetchTubeWeb Release Build
 ========================================
 
 [1/4] Building Go binary...
-  [OK] youtube-downloader.exe built
+  [OK] FetchTubeWeb.exe built
 [2/4] Creating release directory: D:\...\FetchTubeWeb\dist
   [OK] Directory created
 [3/4] Copying files...
-  [OK] youtube-downloader.exe
+  [OK] FetchTubeWeb.exe
 [4/4] Finding dependencies...
   [OK] yt-dlp.exe <- D:\...\yt-dlp.exe (15 MB)
   [OK] ffmpeg.exe <- D:\...\ffmpeg.exe (85 MB)
@@ -249,7 +249,7 @@ make dist
 ========================================
   Release: D:\...\FetchTubeWeb\dist
 ========================================
-  youtube-downloader.exe  (8.5 MB)
+  FetchTubeWeb.exe  (8.5 MB)
   yt-dlp.exe              (15.0 MB)
   ffmpeg.exe              (85.0 MB)
   node.exe                (70.0 MB)
@@ -264,10 +264,10 @@ Done. Zip the dist folder to distribute.
 将 `dist/` 目录打包为 zip：
 
 ```powershell
-Compress-Archive -Path dist\* -DestinationPath youtube-downloader_v2.0.0_win64.zip
+Compress-Archive -Path dist\* -DestinationPath FetchTubeWeb_v2.0.0_win64.zip
 ```
 
-用户解压后直接运行 `youtube-downloader.exe`，浏览器自动打开 WebUI。
+用户解压后直接运行 `FetchTubeWeb.exe`，浏览器自动打开 WebUI。
 
 ---
 
@@ -310,7 +310,7 @@ Compress-Archive -Path dist\* -DestinationPath youtube-downloader_v2.0.0_win64.z
 
 ## 🔧 配置说明
 
-配置自动保存到 `%USERPROFILE%\.youtube_downloader_config.json`，应用启动时自动加载。
+配置自动保存到 `%USERPROFILE%\.FetchTubeWeb_config.json`，应用启动时自动加载。
 
 ```json
 {
@@ -411,8 +411,8 @@ Compress-Archive -Path dist\* -DestinationPath youtube-downloader_v2.0.0_win64.z
 推送版本标签（`v1.0.0`）或手动触发 workflow，自动完成：
 
 1. ✅ 下载最新 `yt-dlp.exe`、`ffmpeg.exe`、`node.exe`
-2. ✅ 编译 `youtube-downloader.exe`（注入版本号 `-X main.version`）
-3. ✅ 打包为 `youtube-downloader_v{ver}_win64.zip`
+2. ✅ 编译 `FetchTubeWeb.exe`（注入版本号 `-X main.version`）
+3. ✅ 打包为 `FetchTubeWeb_v{ver}_win64.zip`
 4. ✅ 创建 GitHub Release 并上传 zip
 
 **触发方式：**
@@ -429,8 +429,8 @@ git push origin v1.0.0
 ## 📝 Makefile 参考
 
 ```makefile
-make build      # 开发构建 → youtube-downloader.exe
-make release    # 生产构建 → dist/youtube-downloader.exe (编译压缩 + 版本注入)
+make build      # 开发构建 → FetchTubeWeb.exe
+make release    # 生产构建 → dist/FetchTubeWeb.exe (编译压缩 + 版本注入)
 make run        # 启动开发服务器 (端口 8899)
 make clean      # 清理构建产物
 make deps       # 下载 Go 依赖

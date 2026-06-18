@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"youtube-downloader/internal/ytdlp"
+	"FetchTubeWeb/internal/ytdlp"
 )
 
 // handleInfo 处理视频信息提取请求

@@ -79,12 +79,12 @@ jobs:
       # 编译 Go（静态链接，无运行时依赖）
       # ============================================================
 
-      - name: 编译 youtube-downloader.exe
+      - name: 编译 FetchTubeWeb.exe
         shell: pwsh
         run: |
           $env:CGO_ENABLED = "0"
-          go build -ldflags="-s -w -X main.version=${{ steps.version.outputs.version }}" -o youtube-downloader.exe .
-          Write-Host "youtube-downloader.exe: $([math]::Round((Get-Item youtube-downloader.exe).Length / 1MB, 1)) MB"
+          go build -ldflags="-s -w -X main.version=${{ steps.version.outputs.version }}" -o FetchTubeWeb.exe .
+          Write-Host "FetchTubeWeb.exe: $([math]::Round((Get-Item FetchTubeWeb.exe).Length / 1MB, 1)) MB"
 
       # ============================================================
       # 打包（同一目录下 4 个 exe，用户解压即用）
@@ -95,11 +95,11 @@ jobs:
         shell: pwsh
         run: |
           $ver = "${{ steps.version.outputs.version }}"
-          $zipName = "youtube-downloader_v${ver}_win64.zip"
-          $releaseDir = "youtube-downloader_v${ver}"
+          $zipName = "FetchTubeWeb_v${ver}_win64.zip"
+          $releaseDir = "FetchTubeWeb_v${ver}"
 
           New-Item -ItemType Directory -Force $releaseDir | Out-Null
-          Copy-Item youtube-downloader.exe  $releaseDir\
+          Copy-Item FetchTubeWeb.exe  $releaseDir\
           Copy-Item yt-dlp.exe              $releaseDir\
           Copy-Item ffmpeg.exe              $releaseDir\
           Copy-Item node.exe                $releaseDir\

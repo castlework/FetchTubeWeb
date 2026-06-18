@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"youtube-downloader/internal/relay"
+	"FetchTubeWeb/internal/relay"
 )
 
 // handleRelayTest 测试 VPS 中继连接

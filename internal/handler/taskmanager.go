@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"youtube-downloader/internal/ytdlp"
+	"FetchTubeWeb/internal/ytdlp"
 )
 
 const maxConcurrent = 3

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"youtube-downloader/internal/config"
+	"FetchTubeWeb/internal/config"
 )
 
 // handleGetConfig 获取配置

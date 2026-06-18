@@ -1,6 +1,6 @@
 # YouTube Downloader Go WebUI — Build System
 
-APP_NAME = youtube-downloader
+APP_NAME = FetchTubeWeb
 VERSION = 2.0.0
 OUTPUT_DIR = dist
 

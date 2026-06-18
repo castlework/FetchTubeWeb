@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"sync"
 
-	"youtube-downloader/internal/config"
-	"youtube-downloader/internal/ytdlp"
+	"FetchTubeWeb/internal/config"
+	"FetchTubeWeb/internal/ytdlp"
 )
 
 // Server 封装所有 HTTP 处理器和共享状态

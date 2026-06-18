@@ -306,8 +306,8 @@ body {
 }
 
 .video-thumb {
-  width: 140px;
-  height: 79px;
+  width: 280px;
+  height: 158px;
   object-fit: cover;
   border-radius: var(--radius-sm);
   background: var(--bg);
@@ -325,7 +325,14 @@ body {
 }
 
 .video-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
-.video-desc { font-size: 11px; color: var(--text-muted); }
+.video-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
 
 /* === Table === */
 .table-wrap {

@@ -2,10 +2,11 @@ package ytdlp
 
 import (
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
-	"youtube-downloader/internal/models"
+	"FetchTubeWeb/internal/models"
 )
 
 // 语言代码到可读名称的映射
@@ -209,10 +210,10 @@ func ParseVideoInfo(raw *RawInfo) *models.VideoInfo {
 	// 提取音频轨道
 	audioTracks := extractAudioTracks(allFormats)
 
-	// 缩略图
+	// 缩略图：优先 yt-dlp 返回字段，否则从 URL 构造 i.ytimg.com 地址
 	thumbnail := raw.Thumbnail
 	if thumbnail == "" {
-		thumbnail = raw.URL
+		thumbnail = buildThumbnailURL(raw.URL)
 	}
 
 	duration := toInt(raw.Duration)
@@ -347,4 +348,18 @@ func truncate(s string, maxLen int) string {
 		return string(runes[:maxLen]) + "..."
 	}
 	return s
+}
+
+// buildThumbnailURL 从 YouTube URL 提取 video ID 构造缩略图地址
+func buildThumbnailURL(webpageURL string) string {
+	patterns := []string{
+		`(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/|youtube\.com/embed/|youtube\.com/v/)([a-zA-Z0-9_-]{11})`,
+	}
+	for _, p := range patterns {
+		re := regexp.MustCompile(p)
+		if m := re.FindStringSubmatch(webpageURL); len(m) >= 2 {
+			return "https://i.ytimg.com/vi/" + m[1] + "/maxresdefault.jpg"
+		}
+	}
+	return ""
 }

@@ -59,9 +59,9 @@ func DefaultConfig() AppConfig {
 func configPath() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return ".youtube_downloader_config.json"
+		return ".FetchTubeWeb_config.json"
 	}
-	return filepath.Join(home, ".youtube_downloader_config.json")
+	return filepath.Join(home, ".FetchTubeWeb_config.json")
 }
 
 // Load 加载配置，文件不存在则返回默认值

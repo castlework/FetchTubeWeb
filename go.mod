@@ -1,4 +1,4 @@
-module youtube-downloader
+module FetchTubeWeb
 
 go 1.22.0
 

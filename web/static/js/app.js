@@ -176,7 +176,9 @@ function renderLocalInfo(info) {
     `👤 ${info.uploader}  ⏱ ${info.duration_str}  👁 ${fmtCount(info.view_count)}  ❤ ${fmtCount(info.like_count)}`;
   document.getElementById('l-desc').textContent = info.description || '';
   if (info.thumbnail_url) {
-    document.getElementById('l-thumbnail').src = info.thumbnail_url;
+    const thumb = document.getElementById('l-thumbnail');
+    thumb.src = info.thumbnail_url;
+    thumb.style.display = '';
   }
 }
 
@@ -832,7 +834,9 @@ function renderRemoteInfo(info) {
   document.getElementById('r-meta').textContent =
     `👤 ${info.uploader}  ⏱ ${info.duration_str}  👁 ${fmtCount(info.view_count)}  ❤ ${fmtCount(info.like_count)}`;
   if (info.thumbnail_url) {
-    document.getElementById('r-thumbnail').src = info.thumbnail_url;
+    const thumb = document.getElementById('r-thumbnail');
+    thumb.src = info.thumbnail_url;
+    thumb.style.display = '';
   }
 }
 

@@ -545,56 +545,43 @@ func scanProgressLines(data []byte, atEOF bool) (advance int, token []byte, err 
 	return 0, nil, nil
 }
 
-// printProgressConsole 在命令行实时刷新显示解析后的进度信息。
-// 用 \r 原地刷新，让用户直观看到「速度/大小/耗时/剩余/进度条」是否被正确解析。
+// printProgressConsole 在命令行实时刷新下载进度。
+// 下载阶段用 \r 原地刷新单行（紧凑格式，避免终端换行混乱），合并/完成阶段换行输出。
 func printProgressConsole(data ProgressData) {
 	switch data.Status {
 	case "downloading":
-		// 文本进度条（20 格）
-		const barLen = 20
-		filled := int(data.Percent / 100.0 * float64(barLen))
-		if filled < 0 {
-			filled = 0
-		}
-		if filled > barLen {
-			filled = barLen
-		}
-		bar := strings.Repeat("█", filled) + strings.Repeat("░", barLen-filled)
-
-		speed := "--"
+		// 精简单行：百分比 速度 (大小) 剩余时间 分片
+		line := fmt.Sprintf("\r  %.1f%%", data.Percent)
 		if data.SpeedMBps > 0 {
-			speed = fmt.Sprintf("%.2f MB/s", data.SpeedMBps)
+			line += fmt.Sprintf("  %.1f MB/s", data.SpeedMBps)
 		}
-		size := "--"
 		if data.TotalMB > 0 {
-			size = fmt.Sprintf("%.1f / %.1f MB", data.DownloadedMB, data.TotalMB)
+			line += fmt.Sprintf("  (%.0f/%.0f MB)", data.DownloadedMB, data.TotalMB)
 		} else if data.DownloadedMB > 0 {
-			size = fmt.Sprintf("%.1f MB", data.DownloadedMB)
+			line += fmt.Sprintf("  (%.0f MB)", data.DownloadedMB)
 		}
-		elapsed := FormatDuration(data.ElapsedSeconds)
-		eta := FormatDuration(data.ETASeconds)
-		frag := ""
-		if data.FragmentCount > 0 {
-			frag = fmt.Sprintf(" | 分片 %d/%d", data.FragmentIndex, data.FragmentCount)
+		if data.ETASeconds > 0 {
+			line += fmt.Sprintf("  ETA %s", FormatDuration(data.ETASeconds))
 		}
-		fmt.Fprintf(os.Stdout, "\r[下载] |%s| %5.1f%% | 速度 %-12s | 大小 %-22s | 耗时 %-8s | 剩余 %-8s%s   ", bar, data.Percent, speed, size, elapsed, eta, frag)
+		if data.FragmentCount > 1 {
+			line += fmt.Sprintf("  frag %d/%d", data.FragmentIndex, data.FragmentCount)
+		}
+		fmt.Fprint(os.Stdout, line, "  ")
 	case "merging":
-		rem := FormatDuration(data.MergeRemaining)
-		fmt.Fprintf(os.Stdout, "\r[合并] 已用 %.0fs | 剩余 %-8s%s   ",
-			data.MergeElapsed, rem, func() string {
-				if data.MergeDone {
-					return " | ✅ 完成"
-				}
-				return ""
-			}())
+		suffix := ""
+		if data.MergeDone {
+			suffix = "  done"
+		}
+		fmt.Fprintf(os.Stdout, "\r  合并中  已用 %.0fs  剩余 %s%s  ",
+			data.MergeElapsed, FormatDuration(data.MergeRemaining), suffix)
 	case "finished":
-		fmt.Fprintf(os.Stdout, "\r[完成] ✅ 100%%                                                                       \n")
+		fmt.Fprintf(os.Stdout, "\r  完成\n")
 	case "error":
-		fmt.Fprintf(os.Stdout, "\n[失败] %s\n", data.ErrorMessage)
+		fmt.Fprintf(os.Stdout, "\n  失败: %s\n", data.ErrorMessage)
 	case "cancelled":
-		fmt.Fprintf(os.Stdout, "\n[已取消]\n")
+		fmt.Fprintf(os.Stdout, "\n  已取消\n")
 	case "retry":
-		fmt.Fprintf(os.Stdout, "\n[重试] 第 %d/%d 次...\n", data.RetryAttempt, data.RetryMax)
+		fmt.Fprintf(os.Stdout, "\n  重试 %d/%d...\n", data.RetryAttempt, data.RetryMax)
 	}
 }
 

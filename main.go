@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"youtube-downloader/internal/handler"
-	"youtube-downloader/web"
+	"FetchTubeWeb/internal/handler"
+	"FetchTubeWeb/web"
 )
 
 var version = "dev"

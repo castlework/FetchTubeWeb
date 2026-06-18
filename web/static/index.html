@@ -44,7 +44,7 @@
       <div class="card" id="l-info-card" style="display:none">
         <div class="card-title">视频信息</div>
         <div class="video-info-grid">
-          <img id="l-thumbnail" class="video-thumb" src="" alt="缩略图">
+          <img id="l-thumbnail" class="video-thumb" src="" alt="缩略图" referrerpolicy="no-referrer" onerror="if(!this.dataset.retried){this.dataset.retried=1;this.src=this.src.replace('maxresdefault','hqdefault')}else{this.style.display='none'}">
           <div>
             <h2 id="l-title" class="video-title"></h2>
             <p id="l-meta" class="video-meta"></p>
@@ -216,7 +216,7 @@
       <div class="card" id="r-info-card" style="display:none">
         <div class="card-title">视频信息</div>
         <div class="video-info-grid">
-          <img id="r-thumbnail" class="video-thumb" src="" alt="缩略图">
+          <img id="r-thumbnail" class="video-thumb" src="" alt="缩略图" referrerpolicy="no-referrer" onerror="if(!this.dataset.retried){this.dataset.retried=1;this.src=this.src.replace('maxresdefault','hqdefault')}else{this.style.display='none'}">
           <div>
             <h2 id="r-title" class="video-title"></h2>
             <p id="r-meta" class="video-meta"></p>

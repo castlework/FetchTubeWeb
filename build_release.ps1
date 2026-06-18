@@ -1,4 +1,4 @@
-# youtube-downloader Release Build Script
+# FetchTubeWeb Release Build Script
 # Usage: .\build_release.ps1
 # Output: .\dist\
 
@@ -8,18 +8,18 @@ Set-Location $goDir
 $releaseDir = Join-Path $goDir "dist"
 
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  youtube-downloader Release Build" -ForegroundColor Cyan
+Write-Host "  FetchTubeWeb Release Build" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # 1. Build Go binary
 Write-Host "[1/4] Building Go binary..." -ForegroundColor Yellow
-go build -ldflags="-s -w" -o youtube-downloader.exe .
+go build -ldflags="-s -w" -o FetchTubeWeb.exe .
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Build failed" -ForegroundColor Red
     exit 1
 }
-Write-Host "  [OK] youtube-downloader.exe built" -ForegroundColor Green
+Write-Host "  [OK] FetchTubeWeb.exe built" -ForegroundColor Green
 
 # 2. Create release directory
 Write-Host "[2/4] Creating release directory: $releaseDir" -ForegroundColor Yellow
@@ -31,8 +31,8 @@ Write-Host "  [OK] Directory created" -ForegroundColor Green
 
 # 3. Copy main binary
 Write-Host "[3/4] Copying files..." -ForegroundColor Yellow
-Copy-Item youtube-downloader.exe $releaseDir\
-Write-Host "  [OK] youtube-downloader.exe" -ForegroundColor Green
+Copy-Item FetchTubeWeb.exe $releaseDir\
+Write-Host "  [OK] FetchTubeWeb.exe" -ForegroundColor Green
 
 # 4. Find and copy dependency executables
 Write-Host "[4/4] Finding dependencies..." -ForegroundColor Yellow

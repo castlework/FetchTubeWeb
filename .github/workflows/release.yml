@@ -61,18 +61,34 @@ jobs:
           Write-Host "Fetching latest ffmpeg release info from GitHub API..."
           $release = Invoke-RestMethod -Uri "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest" `
             -Headers @{ Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}" }
-          $asset = $release.assets | Where-Object { $_.name -like "*win64*gpl*" } | Select-Object -First 1
+
+          # Static build: name like "ffmpeg-master-latest-win64-gpl.zip", NOT "*-shared*"
+          $asset = $release.assets | Where-Object {
+            $_.name -like "*win64*gpl*.zip" -and $_.name -notlike "*shared*"
+          } | Select-Object -First 1
           if (-not $asset) {
-            Write-Host "ERROR: Could not find ffmpeg asset in latest release"
+            Write-Host "ERROR: Could not find static ffmpeg asset in latest release"
             Write-Host "Available assets: $($release.assets.name -join ', ')"
             exit 1
           }
+
           Write-Host "Downloading: $($asset.name) ($([math]::Round($asset.size / 1MB, 1)) MB)"
           Invoke-WebRequest -Uri $asset.browser_download_url -OutFile ffmpeg.zip -UseBasicParsing
+
           Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_extract -Force
           $ffmpegExe = Get-ChildItem -Path ffmpeg_extract -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+          $sizeMB = [math]::Round((Get-Item $ffmpegExe.FullName).Length / 1MB, 1)
+
+          # Static ffmpeg.exe should be > 80 MB; if much smaller it's likely a shared build launcher
+          if ($sizeMB -lt 50) {
+            Write-Host "ERROR: ffmpeg.exe is only $sizeMB MB — likely a shared build (requires DLLs)."
+            Write-Host "Expected static build > 80 MB. Check BtbN release asset names:"
+            Write-Host "$($release.assets.name -join "`n")"
+            exit 1
+          }
+
           Copy-Item $ffmpegExe.FullName ffmpeg.exe
-          Write-Host "ffmpeg.exe: $([math]::Round((Get-Item ffmpeg.exe).Length / 1MB, 1)) MB"
+          Write-Host "ffmpeg.exe: $sizeMB MB (static, standalone)"
 
       - name: Download node.exe (standalone)
         shell: pwsh

@@ -195,6 +195,11 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		"--extractor-retries", "3",
 	}
 
+	// 多音轨：yt-dlp 默认 + 只合并第一个音频流，需 --audio-multistreams 才保留全部
+	if strings.Count(opts.FormatID, "+") > 1 {
+		args = append(args, "--audio-multistreams")
+	}
+
 	if opts.Resume {
 		args = append(args, "--continue")
 	}

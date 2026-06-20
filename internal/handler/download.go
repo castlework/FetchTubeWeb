@@ -307,8 +307,10 @@ func (s *Server) handleThumbnail(w http.ResponseWriter, r *http.Request) {
 
 func pickFolderWindows() (path string, cancelled bool, err error) {
 	// Uses OpenFileDialog: displays a modern file dialog,
-	// user navigates into the target folder and clicks "Open" (FileName is just a placeholder, we take the directory part)
+	// user navigates into the target folder and clicks "Open" (FileName is just a placeholder, we take the directory part).
+	// PowerShell outputs UTF-8 so that Chinese/Unicode paths are preserved through Go's cmd.Output().
 	psScript := `
+$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms
 $d = New-Object System.Windows.Forms.OpenFileDialog
 $d.Title = 'Select save directory — Enter the target folder then click "Open"'
@@ -326,6 +328,15 @@ if ($d.ShowDialog() -eq 'OK') { [System.IO.Path]::GetDirectoryName($d.FileName) 
 		return "", false, fmt.Errorf("Failed to open folder picker dialog: %w", err)
 	}
 	result := strings.TrimSpace(string(output))
+	// Safety net: if PowerShell somehow still produced garbled text (Unicode replacement chars),
+	// retry with chcp 65001 to force UTF-8 code page before invoking powershell.
+	if strings.ContainsRune(result, '�') || strings.ContainsRune(result, '?') {
+		cmd2 := exec.Command("cmd", "/c", "chcp 65001 > nul && powershell -sta -NoProfile -Command "+psScript)
+		output2, err2 := cmd2.Output()
+		if err2 == nil {
+			result = strings.TrimSpace(string(output2))
+		}
+	}
 	if result == "" {
 		return "", true, nil // user cancelled selection
 	}

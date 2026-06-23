@@ -134,6 +134,7 @@ func fetchInfoOnce(ytdlp, url, proxy, cookies string) (*RawInfo, error) {
 
 	var stderr bytes.Buffer
 	cmd := exec.Command(ytdlp, args...)
+	cmd.Env = append(os.Environ(), "PYTHONUTF8=1")
 	cmd.Stderr = &stderr
 	output, err := cmd.Output()
 	if err != nil {
@@ -195,6 +196,10 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		"--extractor-retries", "3",
 	}
 
+	if opts.TempDir != "" {
+		args = append(args, "--paths", "temp:"+opts.TempDir)
+	}
+
 	// Multi-audio: yt-dlp defaults to merging only the first audio stream; --audio-multistreams keeps all
 	if strings.Count(opts.FormatID, "+") > 1 {
 		args = append(args, "--audio-multistreams")
@@ -254,6 +259,7 @@ type DownloadOptions struct {
 	FormatID           string
 	OutputExt          string
 	SaveDir            string
+	TempDir            string // per-task temp directory (isolates parallel downloads)
 	ConcurrentFragments int
 	Resume             bool
 	Proxy              string

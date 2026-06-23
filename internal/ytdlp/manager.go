@@ -93,10 +93,22 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 	m.running.Store(true)
 	defer m.running.Store(false)
 
+	// Per-task temp directory isolates parallel downloads from each other
+	if opts.TempDir == "" {
+		opts.TempDir = filepath.Join(opts.SaveDir, fmt.Sprintf(".ytdl_%d", time.Now().UnixNano()))
+	}
+	os.MkdirAll(opts.TempDir, 0755)
+
+	cleanup := func() {
+		if !opts.KeepTempFiles {
+			_ = os.RemoveAll(opts.TempDir)
+		}
+	}
+
 	for attempt := 1; attempt <= MaxRetries+1; attempt++ {
 		if m.cancelled.Load() {
 			callback(ProgressData{Status: "cancelled"})
-			cleanupTempFiles(opts.SaveDir)
+			cleanup()
 			return nil
 		}
 
@@ -113,12 +125,11 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 
 		switch result {
 		case "done":
-			cleanupTempFiles(opts.SaveDir)
-			// finished callback (with stats) already sent by runOneDownload, don't re-send
+			cleanup()
 			return nil
 		case "cancelled":
 			callback(ProgressData{Status: "cancelled"})
-			cleanupTempFiles(opts.SaveDir)
+			cleanup()
 			return nil
 		case "timeout":
 			if attempt > MaxRetries {
@@ -126,22 +137,22 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 					Status:       "error",
 					ErrorMessage: fmt.Sprintf("Merge timed out (retried %d times).\nTry a lower resolution or check disk space.", MaxRetries),
 				})
+				cleanup()
 				return fmt.Errorf("merge timed out")
 			}
-			// Auto-retry — downloaded streams are preserved
-			continue
+			continue // keep temp files for retry
 		case "error":
-			return nil // error already reported via callback
+			cleanup()
+			return nil
 		}
 	}
 
+	cleanup()
 	return nil
 }
 
 // runOneDownload executes one download attempt, returns result status
 func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback ProgressCallback) string {
-	// Pre-cleanup fragments before download
-	preCleanup(opts.SaveDir)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	m.mu.Lock()
@@ -167,6 +178,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 
 	args := BuildDownloadArgs(opts)
 	cmd := exec.CommandContext(ctx, ytdlp, args...)
+	cmd.Env = append(os.Environ(), "PYTHONUTF8=1")
 	m.mu.Lock()
 	m.cmd = cmd
 	m.mu.Unlock()
@@ -438,55 +450,6 @@ func translateSimple(msg string) string {
 		return "This video is unavailable (deleted or private)."
 	}
 	return msg
-}
-
-// File cleanup functions
-
-func preCleanup(saveDir string) {
-	var cleaned int
-	patterns := []string{"*.ytdl", "*.part", "*.part-*", "*.temp.*"}
-	for _, pat := range patterns {
-		files, _ := filepath.Glob(filepath.Join(saveDir, pat))
-		for _, f := range files {
-			_ = os.Remove(f)
-			cleaned++
-		}
-	}
-	if cleaned > 0 {
-		log.Printf("[cleanup] pre-clean: removed %d temp files from %s", cleaned, saveDir)
-	}
-}
-
-func cleanupTempFiles(saveDir string) {
-	var renamed, removed int
-
-	files, _ := filepath.Glob(filepath.Join(saveDir, "*.temp.*"))
-	for _, f := range files {
-		final := strings.Replace(f, ".temp.", ".", 1)
-		_ = os.Rename(f, final)
-		renamed++
-	}
-
-	patterns := []string{"*.ytdl", "*.part", "*.part-*"}
-	for _, pat := range patterns {
-		files, _ := filepath.Glob(filepath.Join(saveDir, pat))
-		for _, f := range files {
-			_ = os.Remove(f)
-			removed++
-		}
-	}
-
-	entries, _ := os.ReadDir(saveDir)
-	for _, e := range entries {
-		if matched, _ := regexp.MatchString(`\.f\d+`, e.Name()); matched {
-			_ = os.Remove(filepath.Join(saveDir, e.Name()))
-			removed++
-		}
-	}
-
-	if renamed > 0 || removed > 0 {
-		log.Printf("[cleanup] post-download: renamed %d, removed %d temp files from %s", renamed, removed, saveDir)
-	}
 }
 
 func findOutputFiles(saveDir string) []string {

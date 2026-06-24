@@ -188,7 +188,6 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		// progress lines cannot be read by ScanLines. Only affects output format, not download behavior.
 		"--newline",
 		"--format", formatStr,
-		"--output", filepath.Join(opts.SaveDir, "%(title)s.%(ext)s"),
 		"--concurrent-fragments", fmt.Sprintf("%d", opts.ConcurrentFragments),
 		"--retries", "10",
 		"--fragment-retries", "10",
@@ -196,8 +195,14 @@ func BuildDownloadArgs(opts DownloadOptions) []string {
 		"--extractor-retries", "3",
 	}
 
+	// --paths is ignored by yt-dlp when --output is an absolute path.
+	// Use --paths home:<TempDir> + relative --output so yt-dlp places ALL files
+	// (intermediate + final) inside the per-task temp directory.
 	if opts.TempDir != "" {
-		args = append(args, "--paths", "temp:"+opts.TempDir)
+		args = append(args, "--paths", "home:"+opts.TempDir)
+		args = append(args, "--output", "%(title)s.%(ext)s")
+	} else {
+		args = append(args, "--output", filepath.Join(opts.SaveDir, "%(title)s.%(ext)s"))
 	}
 
 	// Multi-audio: yt-dlp defaults to merging only the first audio stream; --audio-multistreams keeps all

@@ -125,6 +125,7 @@ func (m *DownloadManager) Download(opts DownloadOptions, callback ProgressCallba
 
 		switch result {
 		case "done":
+			moveFinalFiles(opts.TempDir, opts.SaveDir)
 			cleanup()
 			return nil
 		case "cancelled":
@@ -293,7 +294,7 @@ func (m *DownloadManager) runOneDownload(opts DownloadOptions, callback Progress
 			}
 			// Stall detection
 			if now.Sub(lastMsgTime) > MergeStallSecs {
-				outputFiles := findOutputFiles(opts.SaveDir)
+				outputFiles := findOutputFiles(opts.TempDir)
 				if len(outputFiles) > 0 {
 					stat, err := os.Stat(outputFiles[0])
 					if err == nil {
@@ -452,6 +453,45 @@ func translateSimple(msg string) string {
 	return msg
 }
 
+// moveFinalFiles moves the final merged video from the per-task temp directory
+// to the save directory, skipping intermediate format files (kept by --keep-video,
+// named like "Title.f137.mp4") and temp/fragment files — those stay in TempDir
+// and get cleaned up by os.RemoveAll.
+func moveFinalFiles(tempDir, saveDir string) {
+	entries, err := os.ReadDir(tempDir)
+	if err != nil {
+		return
+	}
+	formatFileRe := regexp.MustCompile(`\.f\d+\.`)
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if strings.HasPrefix(name, ".") {
+			continue
+		}
+		if formatFileRe.MatchString(name) {
+			continue
+		}
+		if strings.Contains(name, ".ytdl") || strings.Contains(name, ".part") || strings.Contains(name, ".temp.") {
+			continue
+		}
+		ext := strings.ToLower(filepath.Ext(name))
+		if ext == ".mp4" || ext == ".webm" || ext == ".mkv" {
+			src := filepath.Join(tempDir, name)
+			dst := filepath.Join(saveDir, name)
+			// On Windows, os.Rename fails if dst exists — remove old file first
+			_ = os.Remove(dst)
+			if err := os.Rename(src, dst); err != nil {
+				log.Printf("[move] failed to move final output %s: %v", name, err)
+			} else {
+				log.Printf("[move] final output: %s -> %s", name, saveDir)
+			}
+		}
+	}
+}
+
 func findOutputFiles(saveDir string) []string {
 	var files []string
 	entries, _ := os.ReadDir(saveDir)
@@ -558,7 +598,7 @@ func sendFinishedStats(callback ProgressCallback, opts DownloadOptions, download
 
 	// Get actual size of the final output file
 	var finalSizeMB float64
-	if files := findOutputFiles(opts.SaveDir); len(files) > 0 {
+	if files := findOutputFiles(opts.TempDir); len(files) > 0 {
 		if stat, err := os.Stat(files[0]); err == nil {
 			finalSizeMB = float64(stat.Size()) / (1024.0 * 1024.0)
 		}
